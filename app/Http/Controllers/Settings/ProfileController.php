@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Domain\Settings\Data\ProfileData;
+use App\Domain\Settings\UseCases\DeleteAccount;
+use App\Domain\Settings\UseCases\UpdateProfile;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
@@ -14,6 +17,11 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    public function __construct(
+        protected UpdateProfile $updateProfile,
+        protected DeleteAccount $deleteAccount,
+    ) {}
+
     /**
      * Show the user's profile settings page.
      */
@@ -30,13 +38,10 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
+        ($this->updateProfile)(
+            $request->user(),
+            ProfileData::fromArray($request->validated()),
+        );
 
         return to_route('profile.edit');
     }
@@ -50,7 +55,7 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        $user->delete();
+        ($this->deleteAccount)($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

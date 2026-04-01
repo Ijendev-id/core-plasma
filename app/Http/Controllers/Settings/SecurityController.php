@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Domain\Settings\UseCases\GetSecuritySettings;
+use App\Domain\Settings\UseCases\UpdatePassword;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
@@ -14,6 +16,11 @@ use Laravel\Fortify\Features;
 
 class SecurityController extends Controller implements HasMiddleware
 {
+    public function __construct(
+        protected GetSecuritySettings $getSecuritySettings,
+        protected UpdatePassword $updatePassword,
+    ) {}
+
     /**
      * Get the middleware that should be assigned to the controller.
      */
@@ -30,15 +37,10 @@ class SecurityController extends Controller implements HasMiddleware
      */
     public function edit(TwoFactorAuthenticationRequest $request): Response
     {
-        $props = [
-            'canManageTwoFactor' => Features::canManageTwoFactorAuthentication(),
-        ];
+        $props = ($this->getSecuritySettings)($request->user());
 
-        if (Features::canManageTwoFactorAuthentication()) {
+        if ($props['canManageTwoFactor']) {
             $request->ensureStateIsValid();
-
-            $props['twoFactorEnabled'] = $request->user()->hasEnabledTwoFactorAuthentication();
-            $props['requiresConfirmation'] = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
         }
 
         return Inertia::render('settings/security', $props);
@@ -49,9 +51,7 @@ class SecurityController extends Controller implements HasMiddleware
      */
     public function update(PasswordUpdateRequest $request): RedirectResponse
     {
-        $request->user()->update([
-            'password' => $request->password,
-        ]);
+        ($this->updatePassword)($request->user(), $request->password);
 
         return back();
     }
