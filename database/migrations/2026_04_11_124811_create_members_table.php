@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('members', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique()->index();
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('photo_profile')->nullable();
             $table->enum('pendidikan_terakhir', [
                 'SD',
                 'SMP',
