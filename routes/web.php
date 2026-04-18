@@ -9,12 +9,27 @@ use Laravel\Fortify\Features;
 // });
 
 
-// Rute untuk halaman utama
+// --- RUTE HALAMAN UTAMA (LANDING PAGE) ---
 Route::get('/', function () {
     return view('landing.landing');
 })->name('home');
 
-// Rute untuk halaman lainnya (Contoh)
+// --- RUTE AUTHENTICATION (LOGIN) ---
+// Menampilkan form login
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register');
+
+// Aksi proses login (mengarahkan ke controller jika ada)
+// Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
+
+
+// --- RUTE MENU LAINNYA ---
 Route::get('/artikel', function () {
     return view('landing.artikel');
 })->name('artikel');
@@ -34,14 +49,3 @@ Route::get('/testimoni', function () {
 Route::get('/faq', function () {
     return view('landing.landing');
 })->name('faq');
-
-
-// Route::inertia('/', 'welcome', [
-//     'canRegister' => Features::enabled(Features::registration()),
-// ])->name('home');
-
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::inertia('dashboard', 'dashboard')->name('dashboard');
-// });
-
-// require __DIR__.'/settings.php';

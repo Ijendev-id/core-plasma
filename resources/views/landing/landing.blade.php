@@ -130,7 +130,7 @@
                         <h2>Rp 599k</h2><span>/bulan</span>
                     </div>
                     <p class="pricing-desc">BUNDLING 1 Paket Try Out selekesi masuk BUMN</p>
-                    
+
                     <ul class="features">
                         <li><span class="icon-check-red">&#10003;</span> Semua Fitur Paket Pro</li>
                         <li><span class="icon-check-red">&#10003;</span> Live Session Private</li>
