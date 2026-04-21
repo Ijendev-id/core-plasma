@@ -12,8 +12,8 @@
         </ul>
 
         <div class="nav-buttons">
-            <a href="{{ route('login') }}" class="btn-masuk">Masuk</a>
-            <a href="{{ route('register') }}" class="btn-daftar">Daftar</a>
+            <a href="{{ route('member.login') }}" class="btn-masuk">Masuk</a>
+            <a href="{{ route('member.register') }}" class="btn-daftar">Daftar</a>
         </div>
     </nav>
 </header>
