@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademyPortalController;
+use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\PackageInventoryController;
@@ -17,16 +18,9 @@ Route::get('/', function () {
 })->name('home');
 
 // --- RUTE AUTHENTICATION (LOGIN) ---
-// Menampilkan form login
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
-
-
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
-
+Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
+Route::post('/login', [AdminAuthController::class, 'store'])->name('login.store');
+Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
 
 // --- RUTE MENU LAINNYA ---
 Route::get('/artikel', function () {
@@ -49,11 +43,17 @@ Route::get('/faq', function () {
     return view('landing.landing');
 })->name('faq');
 
+// --- RUTE MEMBER AUTH ---
 Route::middleware('guest:member')->group(function (): void {
     Route::get('/member/login', [MemberAuthController::class, 'create'])->name('member.login');
     Route::post('/member/login', [MemberAuthController::class, 'store'])->name('member.login.store');
     Route::get('/member/register', [MemberAuthController::class, 'register'])->name('member.register');
     Route::post('/member/register', [MemberAuthController::class, 'registerStore'])->name('member.register.store');
+});
+
+Route::middleware('guest:web')->group(function (): void {
+    Route::get('/admin/login', [AdminAuthController::class, 'create'])->name('admin.login');
+    Route::post('/admin/login', [AdminAuthController::class, 'store'])->name('admin.login.store');
 });
 
 Route::post('/member/logout', [MemberAuthController::class, 'destroy'])
@@ -68,6 +68,7 @@ Route::middleware('auth:member')->group(function (): void {
 });
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::post('/admin/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
     Route::get('/admin', [AdminDashboardController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/admin/users', [AdminDashboardController::class, 'users'])->name('admin.users.index');
     Route::get('/admin/leaderboard', [AdminDashboardController::class, 'leaderboard'])->name('admin.leaderboard.index');

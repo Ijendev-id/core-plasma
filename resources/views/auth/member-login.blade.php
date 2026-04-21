@@ -43,7 +43,7 @@
                 <button class="h-12 w-full rounded-xl bg-[#a80606] text-sm font-bold text-white shadow-[0_10px_20px_rgba(168,6,6,0.18)]">Masuk Member</button>
             </form>
 
-            <a href="{{ route('login') }}" class="mt-5 block text-center text-xs font-bold text-[#00407f]">Login Admin</a>
+            <a href="{{ route('admin.login') }}" class="mt-5 block text-center text-xs font-bold text-[#00407f]">Login Admin</a>
         </section>
     </main>
 </body>
