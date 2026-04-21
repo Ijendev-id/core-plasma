@@ -121,7 +121,7 @@
                         <li><span class="icon-check-red">&#10003;</span> Konsultasi Lewat WA</li>
                         <li><span class="icon-check-red">&#10003;</span> Modul Fisik Dikirim</li>
                     </ul>
-                    <a href="#" class="btn-pricing btn-primary-block">Daftar Sekarang</a>
+                    <a href="{{ route('member.register') }}" class="btn-pricing btn-primary-block">Daftar Sekarang</a>
                 </div>
 
                 <div class="pricing-card">
@@ -295,7 +295,7 @@
                 <h2>Siap Untuk Menjadi <br> <span class="text-yellow">Siswa Juara</span> Selanjutnya?</h2>
                 <p>Jangan tunda kesempatanmu untuk masuk PTN impian. Mulai perjalanan suksesmu hari ini bersama Core Plasma.</p>
                 <div class="cta-buttons">
-                    <a href="{{ route('paket') }}" class="btn-yellow">Daftar Sekarang</a>
+                    <a href="{{ route('member.register') }}" class="btn-yellow">Daftar Sekarang</a>
                     <a href="#" class="btn-dark-red">Hubungi Admin</a>
                 </div>
             </div>
