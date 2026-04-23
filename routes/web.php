@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 // --- RUTE HALAMAN UTAMA (LANDING PAGE) ---
 Route::get('/', function () {
-    return view('landing.landing');
+    return view('landing');
 })->name('home');
 
 // --- RUTE AUTHENTICATION (LOGIN) ---
@@ -22,7 +22,8 @@ Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
 Route::post('/login', [AdminAuthController::class, 'store'])->name('login.store');
 Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
 
-// --- RUTE MENU LAINNYA ---
+// --- RUTE MENU LAINNYA (Dinonaktifkan karena menggunakan sistem Scroll di Landing Page) ---
+/*
 Route::get('/artikel', function () {
     return view('landing.artikel');
 })->name('artikel');
@@ -42,6 +43,7 @@ Route::get('/testimoni', function () {
 Route::get('/faq', function () {
     return view('landing.landing');
 })->name('faq');
+*/
 
 // --- RUTE MEMBER AUTH ---
 Route::middleware('guest:member')->group(function (): void {

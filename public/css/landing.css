@@ -17,6 +17,14 @@
     font-family: 'Poppins', sans-serif;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
+section {
+    scroll-margin-top: 80px;
+}
+
 body {
     background-color: var(--bg-light);
     color: var(--text-dark);

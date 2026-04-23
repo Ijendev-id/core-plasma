@@ -9,26 +9,28 @@
 </head>
 <body>
 
-    <nav class="navbar">
-        <a href="{{ url('/') }}" class="logo">Core Plasma</a>
+    <header class="header-wrapper">
+        <nav class="navbar">
+            <a href="{{ url('/') }}" class="logo">Core Plasma</a>
 
-        <ul class="nav-links">
-            <li><a href="#" class="active">Beranda</a></li>
-            <li><a href="#">Artikel</a></li>
-            <li><a href="#">Paket Belajar</a></li>
-            <li><a href="#">Keunggulan</a></li>
-            <li><a href="#">Testimoni</a></li>
-            <li><a href="#">Promo</a></li>
-            <li><a href="#">FAQ</a></li>
-        </ul>
+            <ul class="nav-links">
+                <li><a href="#hero" class="active">Beranda</a></li>
+                <li><a href="#artikel">Artikel</a></li>
+                <li><a href="#paket">Paket Belajar</a></li>
+                <li><a href="#keunggulan">Keunggulan</a></li>
+                <li><a href="#testimoni">Testimoni</a></li>
+                <li><a href="#promo">Promo</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ul>
 
-        <div class="nav-buttons">
-            <a href="#" class="btn-masuk">Masuk</a>
-            <a href="#" class="btn-daftar">Daftar</a>
-        </div>
-    </nav>
+            <div class="nav-buttons">
+                <a href="#" class="btn-masuk">Masuk</a>
+                <a href="#" class="btn-daftar">Daftar</a>
+            </div>
+        </nav>
+    </header>
 
-    <section class="hero">
+    <section class="hero" id="hero">
         <div class="hero-content">
             <div class="badge">#PLATFORM TRYOUT TERPERCAYA</div>
 
@@ -168,7 +170,7 @@
         </div>
     </section>
 
-    <section class="section-padding" style="background-color: #FFFFFF;" id="tentang">
+    <section class="section-padding" style="background-color: #FFFFFF;" id="keunggulan">
         <div class="container about-wrapper">
 
             <div class="about-gallery">
@@ -321,7 +323,7 @@
         </div>
     </section>
 
-    <section class="section-padding" style="background-color: #FFFFFF;" id="cta-banner">
+    <section class="section-padding" style="background-color: #FFFFFF;" id="promo">
         <div class="container">
             <div class="cta-box">
                 <h2>Siap Untuk Menjadi <br> <span class="text-yellow">Siswa Juara</span> Selanjutnya?</h2>
