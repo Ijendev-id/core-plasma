@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcademyPortalController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\PackageInventoryController;
 use App\Http\Controllers\TryoutQuestionController;
@@ -22,14 +23,13 @@ Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
 Route::post('/login', [AdminAuthController::class, 'store'])->name('login.store');
 Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
 
-// --- RUTE MENU LAINNYA (Dinonaktifkan karena menggunakan sistem Scroll di Landing Page) ---
-/*
-Route::get('/artikel', function () {
-    return view('landing.artikel');
-})->name('artikel');
+// --- RUTE ARTIKEL (BLOG) ---
+Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel');
+Route::get('/artikel/{slug}', [ArticleController::class, 'show'])->name('artikel.show');
 
+// --- RUTE MENU LAINNYA ---
 Route::get('/paket-belajar', function () {
-    return view('landing.paket');
+    return view('landing.landing');
 })->name('paket');
 
 Route::get('/keunggulan', function () {
@@ -43,7 +43,6 @@ Route::get('/testimoni', function () {
 Route::get('/faq', function () {
     return view('landing.landing');
 })->name('faq');
-*/
 
 // --- RUTE MEMBER AUTH ---
 Route::middleware('guest:member')->group(function (): void {

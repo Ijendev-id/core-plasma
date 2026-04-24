@@ -12,8 +12,16 @@
         </ul>
 
         <div class="nav-buttons">
-            <a href="{{ route('member.login') }}" class="btn-masuk">Masuk</a>
-            <a href="{{ route('member.register') }}" class="btn-daftar">Daftar</a>
+            @auth('member')
+                <a href="{{ route('dashboard') }}" class="btn-masuk">Dashboard</a>
+                <form action="{{ route('member.logout') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="btn-daftar" style="border: none; background: none; cursor: pointer; color: inherit; font: inherit;">Keluar</button>
+                </form>
+            @else
+                <a href="{{ route('member.login') }}" class="btn-masuk">Masuk</a>
+                <a href="{{ route('member.register') }}" class="btn-daftar">Daftar</a>
+            @endauth
         </div>
     </nav>
 </header>

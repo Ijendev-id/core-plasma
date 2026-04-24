@@ -24,8 +24,16 @@
             </ul>
 
             <div class="nav-buttons">
-                <a href="#" class="btn-masuk">Masuk</a>
-                <a href="#" class="btn-daftar">Daftar</a>
+                @auth('member')
+                    <a href="{{ route('dashboard') }}" class="btn-masuk">Dashboard</a>
+                    <form action="{{ route('member.logout') }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="btn-daftar" style="border: none; cursor: pointer;">Keluar</button>
+                    </form>
+                @else
+                    <a href="{{ route('member.login') }}" class="btn-masuk">Masuk</a>
+                    <a href="{{ route('member.register') }}" class="btn-daftar">Daftar</a>
+                @endauth
             </div>
         </nav>
     </header>
@@ -68,7 +76,7 @@
                     <p class="subtitle">WAWASAN TERBARU</p>
                     <h2>Artikel <span class="text-red">Terupdate</span></h2>
                 </div>
-                <a href="#" class="view-all">Lihat Semua Blog &rarr;</a>
+                <a href="{{ route('artikel') }}" class="view-all">Lihat Semua Blog &rarr;</a>
             </div>
 
             <div class="article-grid">
@@ -81,7 +89,7 @@
                         <span class="date">24 Mei 2024</span>
                         <h3>Strategi Menjawab Soal Literasi Bahasa Inggris di UTBK 2024</h3>
                         <p>Kuasai teknik scanning dan skimming untuk menghemat waktu pengerjaan soal bacaan...</p>
-                        <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
+                        <a href="{{ route('artikel.show', 'strategi-menjawab-soal-literasi-bahasa-inggris-utbk-2024') }}" class="read-more">Baca Selengkapnya &rsaquo;</a>
                     </div>
                 </div>
 
@@ -94,7 +102,7 @@
                         <span class="date">20 Mei 2024</span>
                         <h3>Daftar Jurusan Paling Ketat di Universitas Indonesia (UI) Tahun Ini</h3>
                         <p>Simak data keketatan prodi SAINTEK dan SOSHUM sebagai referensi pemilihan jurusan di jalur SNBT...</p>
-                        <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
+                        <a href="{{ route('artikel.show', 'daftar-jurusan-paling-ketat-ui-2024') }}" class="read-more">Baca Selengkapnya &rsaquo;</a>
                     </div>
                 </div>
 
@@ -107,7 +115,7 @@
                         <span class="date">18 Mei 2024</span>
                         <h3>Pentingnya Mental Health Selama Menghadapi Persiapan Ujian Nasional</h3>
                         <p>Jangan sampai burnout! Inilah tips menjaga keseimbangan mental agar tetap fokus saat belajar...</p>
-                        <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
+                        <a href="{{ route('artikel.show', 'pentingnya-mental-health-persiapan-ujian') }}" class="read-more">Baca Selengkapnya &rsaquo;</a>
                     </div>
                 </div>
             </div>
