@@ -33,8 +33,9 @@ class AdminDashboardController extends Controller
         ]);
     }
 
-    public function leaderboard(): View
+    public function leaderboard(\Illuminate\Http\Request $request): View
     {
-        return view('backend.leaderboard.index', $this->portalService->adminLeaderboard());
+        $packageId = $request->query('package_id');
+        return view('backend.leaderboard.index', $this->portalService->adminLeaderboard($packageId ? (int) $packageId : null));
     }
 }

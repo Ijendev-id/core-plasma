@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Member;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class MemberSeeder extends Seeder
@@ -30,7 +31,7 @@ class MemberSeeder extends Seeder
             $model->forceFill([
                 'uuid' => $model->uuid ?? (string) Str::uuid(),
                 'name' => $member['name'],
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'photo_profile' => null,
                 'pendidikan_terakhir' => $member['pendidikan_terakhir'],
             ])->save();

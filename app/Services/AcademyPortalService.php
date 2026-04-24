@@ -178,23 +178,47 @@ class AcademyPortalService
     /**
      * @return array<string, mixed>
      */
-    public function adminLeaderboard(): array
+    public function adminLeaderboard(?int $packageId = null): array
     {
-        $attempts = $this->topAttempts(20);
-        $averageScore = (float) TryoutAttempt::query()->whereNotNull('finished_at')->avg('score');
+        $query = TryoutAttempt::query()
+            ->with(['member', 'learningPackage'])
+            ->whereNotNull('finished_at');
+
+        if ($packageId) {
+            $query->where('learning_package_id', $packageId);
+        }
+
+        $allAttempts = $query->orderByDesc('score')
+            ->orderBy('duration_seconds')
+            ->get();
+
+        $averageScore = (float) $allAttempts->avg('score');
+        $podium = $allAttempts->take(3)->map(fn (TryoutAttempt $attempt, int $index) => [
+            'rank' => $index + 1,
+            'name' => $attempt->member?->name ?? 'Member',
+            'score' => $attempt->score,
+            'package' => $attempt->learningPackage?->name ?? 'General',
+            'avatar' => 'https://ui-avatars.com/api/?name='.urlencode($attempt->member?->name ?? 'M').'&background=random',
+        ]);
 
         return [
+            'packages' => LearningPackage::query()->where('status', 'published')->get(['id', 'name']),
+            'selectedPackage' => $packageId,
             'summary' => [
-                ['label' => 'Participants', 'value' => number_format(Member::query()->count())],
+                ['label' => 'Participants', 'value' => number_format($allAttempts->count())],
                 ['label' => 'Average Score', 'value' => number_format($averageScore, 1)],
-                ['label' => 'Live Tryout', 'value' => number_format(LearningPackage::query()->where('status', 'published')->count())],
+                ['label' => 'Active Tryouts', 'value' => number_format(LearningPackage::query()->where('status', 'published')->count())],
             ],
-            'rows' => $attempts
+            'podium' => $podium->all(),
+            'rows' => $allAttempts->skip(3)
                 ->map(fn (TryoutAttempt $attempt): array => [
+                    'id' => $attempt->id,
                     'name' => $attempt->member?->name ?? 'Member',
+                    'package' => $attempt->learningPackage?->name ?? 'General',
                     'score' => $attempt->score,
                     'time' => $this->formatDuration($attempt->duration_seconds),
                     'status' => $this->attemptStatus($attempt->status),
+                    'is_flagged' => $attempt->duration_seconds < 300, // Example suspicious logic
                 ])
                 ->all(),
         ];
