@@ -20,7 +20,15 @@
             <a href="{{ route('admin.leaderboard.index') }}" class="{{ request()->routeIs('admin.leaderboard.*') ? 'bg-[#fff1f1] text-[#d40f22]' : 'hover:bg-[#f6f3f2]' }} rounded-lg px-3 py-3">Leaderboard</a>
             <a href="{{ route('dashboard') }}" class="rounded-lg px-3 py-3 hover:bg-[#f6f3f2]">Student Portal</a>
         </nav>
-        <a href="{{ route('admin.packages.create') }}" class="absolute bottom-8 left-8 right-8 rounded-xl bg-[#a80606] px-4 py-4 text-center text-sm font-bold text-white shadow-[0_10px_20px_rgba(168,6,6,0.2)]">+ New Course</a>
+        <div class="absolute bottom-8 left-8 right-8 flex flex-col gap-3">
+            <form method="POST" action="{{ route('admin.logout') }}">
+                @csrf
+                <button type="submit" class="w-full rounded-xl border border-[#ffd0d0] bg-[#fff1f1] px-4 py-3 text-center text-sm font-semibold text-[#d40f22] transition hover:bg-[#ffe0e0]">
+                    Logout
+                </button>
+            </form>
+            <a href="{{ route('admin.packages.create') }}" class="rounded-xl bg-[#a80606] px-4 py-4 text-center text-sm font-bold text-white shadow-[0_10px_20px_rgba(168,6,6,0.2)]">+ New Course</a>
+        </div>
     </aside>
 
     <header class="fixed left-0 right-0 top-0 z-10 flex h-[80px] items-center justify-between bg-white/90 px-5 shadow-[0_1px_20px_rgba(0,0,0,0.03)] backdrop-blur lg:left-[288px] lg:px-8">
