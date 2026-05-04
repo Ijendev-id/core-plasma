@@ -4,7 +4,7 @@
 
 @section('content')
     <main class="min-h-screen px-5 pb-10 pt-[104px] lg:ml-[288px] lg:px-12">
-        <section class="max-w-6xl">
+        <section>
             <div class="flex items-end justify-between">
                 <div>
                     <h1 class="font-['Plus_Jakarta_Sans'] text-3xl font-extrabold">User Management</h1>

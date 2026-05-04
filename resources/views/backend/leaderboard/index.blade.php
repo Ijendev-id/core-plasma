@@ -4,7 +4,7 @@
 
 @section('content')
     <main class="min-h-screen px-5 pb-10 pt-[104px] lg:ml-[288px] lg:px-12">
-        <section class="max-w-6xl">
+        <section>
             <h1 class="font-['Plus_Jakarta_Sans'] text-3xl font-extrabold">Leaderboard Management</h1>
             <p class="mt-2 text-sm font-medium text-[#727783]">Pantau hasil tryout, hall of fame, dan score siswa.</p>
 
