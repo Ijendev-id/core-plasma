@@ -54,7 +54,7 @@
         </div>
     </header>
 
-    <main class="flex w-full max-w-full flex-col gap-8 pb-[56px] pt-[112px] lg:ml-[288px] lg:px-12">
+    <main class="w-full pb-[56px] pt-[112px] lg:ml-[288px] lg:px-12">
         <div class="flex w-full flex-col gap-8 p-8">
         <section class="flex flex-col gap-6">
             <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
