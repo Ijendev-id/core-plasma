@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AcademyPortalService
 {
@@ -38,6 +39,28 @@ class AcademyPortalService
     public function tryouts(): array
     {
         $member = $this->currentMember();
+
+        $myTryouts = $member
+            ? TryoutAttempt::query()
+                ->with('learningPackage')
+                ->where('member_id', $member->id)
+                ->whereNotNull('finished_at')
+                ->latest('finished_at')
+                ->get()
+                ->map(fn (TryoutAttempt $attempt): array => [
+                    'package_name' => $attempt->learningPackage?->name ?? 'Tryout',
+                    'package_slug' => $attempt->learningPackage?->slug ?? '#',
+                    'score' => $attempt->score,
+                    'twk' => $attempt->twk_score,
+                    'tiu' => $attempt->tiu_score,
+                    'tkp' => $attempt->tkp_score,
+                    'status' => $this->attemptStatus($attempt->status),
+                    'date' => $attempt->finished_at?->format('d M Y'),
+                    'duration' => $this->formatDuration($attempt->duration_seconds),
+                ])
+                ->all()
+            : [];
+
         $progressByPackage = $member
             ? PackageEnrollment::query()
                 ->where('member_id', $member->id)
@@ -45,6 +68,7 @@ class AcademyPortalService
             : collect();
 
         return [
+            'myTryouts' => $myTryouts,
             'packages' => LearningPackage::query()
                 ->withCount('questions')
                 ->where('status', 'published')
@@ -189,7 +213,7 @@ class AcademyPortalService
         ]);
 
         Member::create([
-            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),

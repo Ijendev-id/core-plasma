@@ -6,7 +6,9 @@
         "build": "vite build",
         "dev": "vite",
         "format": "prettier --write resources/",
-        "format:check": "prettier --check resources/"
+        "format:check": "prettier --check resources/",
+        "lint:check": "prettier --check resources/",
+        "types:check": "echo 'No TypeScript files to check'"
     },
     "devDependencies": {
         "prettier": "^3.4.2",
