@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'uuid',
@@ -25,6 +26,15 @@ class Member extends Authenticatable
 {
     /** @use HasFactory<MemberFactory> */
     use HasFactory, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Member $member): void {
+            if (empty($member->uuid)) {
+                $member->uuid = (string) Str::uuid();
+            }
+        });
+    }
 
     /**
      * @return BelongsToMany<LearningPackage, $this>

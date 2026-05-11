@@ -54,7 +54,7 @@
         </div>
     </header>
 
-    <main class="flex w-full max-w-[992px] flex-col gap-8 pb-[56px] pt-[112px] lg:ml-[288px] lg:px-12">
+    <main class="pb-[56px] pt-[112px] lg:ml-[288px] lg:w-[calc(100%-288px)] lg:px-12">
         <div class="flex w-full flex-col gap-8 p-8">
         <section class="flex flex-col gap-6">
             <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -136,7 +136,7 @@
             @endif
 
             <div class="overflow-x-auto px-4 py-2">
-                <table class="w-full min-w-[983px] border-separate border-spacing-y-2 text-left">
+                <table class="w-full min-w-[800px] border-separate border-spacing-y-2 text-left">
                     <thead>
                         <tr>
                             <th class="px-6 py-4 text-xs font-semibold uppercase leading-4 tracking-[1.2px] text-[#727783]">Package Name</th>

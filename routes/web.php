@@ -72,6 +72,11 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::post('/admin/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
     Route::get('/admin', [AdminDashboardController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/admin/users', [AdminDashboardController::class, 'users'])->name('admin.users.index');
+    Route::get('/admin/users/create', [AdminDashboardController::class, 'createUser'])->name('admin.users.create');
+    Route::post('/admin/users', [AdminDashboardController::class, 'storeUser'])->name('admin.users.store');
+    Route::get('/admin/users/{member}/edit', [AdminDashboardController::class, 'editUser'])->name('admin.users.edit');
+    Route::put('/admin/users/{member}', [AdminDashboardController::class, 'updateUser'])->name('admin.users.update');
+    Route::delete('/admin/users/{member}', [AdminDashboardController::class, 'destroyUser'])->name('admin.users.destroy');
     Route::get('/admin/leaderboard', [AdminDashboardController::class, 'leaderboard'])->name('admin.leaderboard.index');
     Route::get('/admin/packages', [PackageInventoryController::class, 'index'])->name('admin.packages.index');
     Route::get('/admin/packages/create', [PackageInventoryController::class, 'create'])->name('admin.packages.create');

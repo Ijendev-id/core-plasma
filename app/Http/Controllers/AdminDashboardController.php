@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\LearningPackage;
+use App\Models\Member;
 use App\Services\AcademyPortalService;
 use App\Services\PackageInventoryService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
@@ -22,6 +25,31 @@ class AdminDashboardController extends Controller
     public function users(): View
     {
         return view('backend.users.index', $this->portalService->adminUsers());
+    }
+
+    public function createUser(): View
+    {
+        return view('backend.users.create');
+    }
+
+    public function storeUser(Request $request): RedirectResponse
+    {
+        return $this->portalService->storeUser($request);
+    }
+
+    public function editUser(Member $member): View
+    {
+        return view('backend.users.edit', ['member' => $member]);
+    }
+
+    public function updateUser(Request $request, Member $member): RedirectResponse
+    {
+        return $this->portalService->updateUser($request, $member);
+    }
+
+    public function destroyUser(Member $member): RedirectResponse
+    {
+        return $this->portalService->destroyUser($member);
     }
 
     public function tryoutDetail(LearningPackage $package): View

@@ -4,7 +4,7 @@
 
 @section('content')
     <main class="min-h-screen px-5 pb-10 pt-[104px] lg:ml-[288px] lg:px-12">
-        <section class="grid max-w-6xl gap-6 xl:grid-cols-[1fr_280px]">
+        <section class="grid gap-6 xl:grid-cols-[1fr_280px]">
             <div class="space-y-6">
                 <div class="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
                     <div class="flex items-start justify-between gap-5">

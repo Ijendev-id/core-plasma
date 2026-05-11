@@ -7,6 +7,7 @@ use App\Models\Member;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class MemberAuthController extends Controller
@@ -37,6 +38,7 @@ class MemberAuthController extends Controller
         ]);
 
         $member = Member::create([
+            'uuid' => (string) Str::uuid(),
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],

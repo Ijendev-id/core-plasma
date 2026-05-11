@@ -7,7 +7,11 @@ use App\Models\Member;
 use App\Models\PackageEnrollment;
 use App\Models\TryoutAttempt;
 use App\Models\TryoutQuestion;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AcademyPortalService
 {
@@ -35,6 +39,28 @@ class AcademyPortalService
     public function tryouts(): array
     {
         $member = $this->currentMember();
+
+        $myTryouts = $member
+            ? TryoutAttempt::query()
+                ->with('learningPackage')
+                ->where('member_id', $member->id)
+                ->whereNotNull('finished_at')
+                ->latest('finished_at')
+                ->get()
+                ->map(fn (TryoutAttempt $attempt): array => [
+                    'package_name' => $attempt->learningPackage?->name ?? 'Tryout',
+                    'package_slug' => $attempt->learningPackage?->slug ?? '#',
+                    'score' => $attempt->score,
+                    'twk' => $attempt->twk_score,
+                    'tiu' => $attempt->tiu_score,
+                    'tkp' => $attempt->tkp_score,
+                    'status' => $this->attemptStatus($attempt->status),
+                    'date' => $attempt->finished_at?->format('d M Y'),
+                    'duration' => $this->formatDuration($attempt->duration_seconds),
+                ])
+                ->all()
+            : [];
+
         $progressByPackage = $member
             ? PackageEnrollment::query()
                 ->where('member_id', $member->id)
@@ -42,6 +68,7 @@ class AcademyPortalService
             : collect();
 
         return [
+            'myTryouts' => $myTryouts,
             'packages' => LearningPackage::query()
                 ->withCount('questions')
                 ->where('status', 'published')
@@ -164,6 +191,7 @@ class AcademyPortalService
                     $status = $package?->pivot?->status ?? 'inactive';
 
                     return [
+                        'id' => $member->id,
                         'name' => $member->name,
                         'email' => $member->email,
                         'education' => $member->pendidikan_terakhir ?? '-',
@@ -173,6 +201,55 @@ class AcademyPortalService
                 })
                 ->all(),
         ];
+    }
+
+    public function storeUser(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:members,email',
+            'password' => 'required|string|min:8',
+            'pendidikan_terakhir' => 'nullable|string|max:255',
+        ]);
+
+        Member::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'pendidikan_terakhir' => $validated['pendidikan_terakhir'] ?? null,
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+    }
+
+    public function updateUser(Request $request, Member $member): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:members,email,'.$member->id,
+            'password' => 'nullable|string|min:8',
+            'pendidikan_terakhir' => 'nullable|string|max:255',
+        ]);
+
+        $member->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'pendidikan_terakhir' => $validated['pendidikan_terakhir'] ?? null,
+        ]);
+
+        if (! empty($validated['password'])) {
+            $member->update(['password' => Hash::make($validated['password'])]);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+    }
+
+    public function destroyUser(Member $member): RedirectResponse
+    {
+        $member->delete();
+
+        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
 
     /**
