@@ -4,7 +4,6 @@
 
 @section('content')
     <main class="min-h-screen px-5 pb-10 pt-[104px] lg:ml-[288px] lg:px-12">
-<<<<<<< HEAD
         <section class="max-w-6xl">
             <div class="flex flex-wrap items-end justify-between gap-6">
                 <div>
@@ -20,11 +19,6 @@
                     </button>
                 </div>
             </div>
-=======
-        <section>
-            <h1 class="font-['Plus_Jakarta_Sans'] text-3xl font-extrabold">Leaderboard Management</h1>
-            <p class="mt-2 text-sm font-medium text-[#727783]">Pantau hasil tryout, hall of fame, dan score siswa.</p>
->>>>>>> fbe19b18166d793e2203185dec88c87b53bc062b
 
             <!-- Package Selector (Dropdown) -->
             <div class="mt-10 flex flex-wrap items-center gap-4 border-b border-[#e5e0df] pb-6">
