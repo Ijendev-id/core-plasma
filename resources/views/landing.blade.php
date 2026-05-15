@@ -239,12 +239,13 @@
                     <p class="desc mb-0">Dari ragu-ragu menjadi yakin, inilah testimoni nyata dari siswa Core Plasma.</p>
                 </div>
                 <div class="testi-nav">
-                    <button class="btn-nav">&larr;</button>
-                    <button class="btn-nav">&rarr;</button>
+                    <button class="btn-nav" id="prevTesti">&larr;</button>
+                    <button class="btn-nav" id="nextTesti">&rarr;</button>
                 </div>
             </div>
 
-            <div class="testi-grid">
+            <div class="testi-container">
+                <div class="testi-grid" id="testiGrid">
 
                 <div class="testi-card">
                     <div class="stars">
@@ -260,7 +261,7 @@
                     </div>
                 </div>
 
-                <div class="testi-card border-bottom-red">
+                <div class="testi-card">
                     <div class="stars">
                         &#9733; &#9733; &#9733; &#9733; &#9733;
                     </div>
@@ -288,9 +289,38 @@
                     </div>
                 </div>
 
+                <div class="testi-card">
+                    <div class="stars">
+                        &#9733; &#9733; &#9733; &#9733; &#9733;
+                    </div>
+                    <p class="review-text">"Penjelasan kak Faiz di video materi bener-bener daging semua. Gampang dimengerti bahkan buat aku yang dasarnya lemah di matematika."</p>
+                    <div class="user-info">
+                        <img src="https://i.pravatar.cc/150?img=12" alt="Dika" class="avatar">
+                        <div>
+                            <h5>Dika Pratama</h5>
+                            <span class="achievement text-red">LOLOS AKPOL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testi-card">
+                    <div class="stars">
+                        &#9733; &#9733; &#9733; &#9733; &#9733;
+                    </div>
+                    <p class="review-text">"Gak nyesel langganan Paket Pro. Modul fisiknya membantu banget buat latihan mandiri di rumah tanpa harus liat layar terus."</p>
+                    <div class="user-info">
+                        <img src="https://i.pravatar.cc/150?img=16" alt="Eka" class="avatar">
+                        <div>
+                            <h5>Eka Putri</h5>
+                            <span class="achievement text-red">LOLOS STAN</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-    </section>
+    </div>
+</section>
     <section class="section-padding bg-light-alt" id="faq">
         <div class="container faq-container">
             <div class="section-header text-center">
@@ -367,5 +397,70 @@
     </footer>
 
 
+    <script>
+        const testiGrid = document.getElementById('testiGrid');
+        const prevBtn = document.getElementById('prevTesti');
+        const nextBtn = document.getElementById('nextTesti');
+        let isTransitioning = false;
+
+        function updateActive() {
+            const cards = testiGrid.querySelectorAll('.testi-card');
+            cards.forEach(card => card.classList.remove('active'));
+            // Kartu tengah dari 3 yang muncul adalah indeks ke-1
+            if (cards.length > 1) {
+                cards[1].classList.add('active');
+            }
+        }
+
+        if (testiGrid && prevBtn && nextBtn) {
+            updateActive();
+
+            nextBtn.addEventListener('click', () => {
+                if (isTransitioning) return;
+                isTransitioning = true;
+
+                const cardWidth = 350 + 30; // Lebar kartu + Gap
+                testiGrid.style.transform = `translateX(-${cardWidth}px)`;
+
+                testiGrid.addEventListener('transitionend', function handleNext() {
+                    testiGrid.style.transition = 'none';
+                    testiGrid.appendChild(testiGrid.firstElementChild);
+                    testiGrid.style.transform = 'translateX(0)';
+                    
+                    // Force reflow
+                    testiGrid.offsetHeight;
+                    
+                    testiGrid.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    updateActive();
+                    isTransitioning = false;
+                    testiGrid.removeEventListener('transitionend', handleNext);
+                });
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (isTransitioning) return;
+                isTransitioning = true;
+
+                const cardWidth = 350 + 30;
+                
+                // Pindah elemen dulu tanpa animasi
+                testiGrid.style.transition = 'none';
+                testiGrid.insertBefore(testiGrid.lastElementChild, testiGrid.firstElementChild);
+                testiGrid.style.transform = `translateX(-${cardWidth}px)`;
+                
+                // Force reflow
+                testiGrid.offsetHeight;
+
+                // Baru geser dengan animasi ke 0
+                testiGrid.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                testiGrid.style.transform = 'translateX(0)';
+                
+                setTimeout(() => {
+                    updateActive();
+                    isTransitioning = false;
+                }, 600);
+            });
+        }
+    </script>
 </body>
 </html>
