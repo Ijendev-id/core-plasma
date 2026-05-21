@@ -8,13 +8,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class MemberAuthController extends Controller
 {
-    public function create(): View
+    public function create(): Response
     {
-        return view('auth.member-login');
+        return Inertia::render('auth/member-login');
     }
 
     public function store(MemberLoginRequest $request): RedirectResponse
@@ -24,9 +25,9 @@ class MemberAuthController extends Controller
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
-    public function register(): View
+    public function register(): Response
     {
-        return view('auth.member-register');
+        return Inertia::render('auth/member-register');
     }
 
     public function registerStore(Request $request): RedirectResponse

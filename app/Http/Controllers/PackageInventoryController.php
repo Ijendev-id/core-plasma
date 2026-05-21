@@ -8,7 +8,8 @@ use App\Http\Requests\PackageInventoryUpdateRequest;
 use App\Models\LearningPackage;
 use App\Services\PackageInventoryService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PackageInventoryController extends Controller
 {
@@ -16,14 +17,14 @@ class PackageInventoryController extends Controller
         private readonly PackageInventoryService $service,
     ) {}
 
-    public function index(PackageInventoryIndexRequest $request): View
+    public function index(PackageInventoryIndexRequest $request): Response
     {
-        return view('backend.package-inventory.index', $this->service->getPackageInventoryPage($request->validated()));
+        return Inertia::render('admin/packages/index', $this->service->getPackageInventoryPage($request->validated()));
     }
 
-    public function create(): View
+    public function create(): Response
     {
-        return view('backend.package-inventory.form', [
+        return Inertia::render('admin/packages/form', [
             ...$this->service->getPackageFormPage(),
             'title' => 'Create New Package',
             'action' => route('admin.packages.store'),
@@ -39,9 +40,9 @@ class PackageInventoryController extends Controller
             ->with('status', 'Package berhasil dibuat.');
     }
 
-    public function edit(LearningPackage $package): View
+    public function edit(LearningPackage $package): Response
     {
-        return view('backend.package-inventory.form', [
+        return Inertia::render('admin/packages/form', [
             ...$this->service->getPackageFormPage($package),
             'title' => 'Edit Package',
             'action' => route('admin.packages.update', $package),

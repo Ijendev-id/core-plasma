@@ -7,14 +7,11 @@ use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\PackageInventoryController;
 use App\Http\Controllers\TryoutQuestionController;
 use Illuminate\Support\Facades\Route;
-
-// Route::get('/', function () {
-//     return view('landing');
-// });
+use Inertia\Inertia;
 
 // --- RUTE HALAMAN UTAMA (LANDING PAGE) ---
 Route::get('/', function () {
-    return view('landing.landing');
+    return Inertia::render('landing');
 })->name('home');
 
 // --- RUTE AUTHENTICATION (LOGIN) ---
@@ -24,23 +21,23 @@ Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
 
 // --- RUTE MENU LAINNYA ---
 Route::get('/artikel', function () {
-    return view('landing.artikel');
+    return Inertia::render('landing');
 })->name('artikel');
 
 Route::get('/paket-belajar', function () {
-    return view('landing.paket');
+    return Inertia::render('landing');
 })->name('paket');
 
 Route::get('/keunggulan', function () {
-    return view('landing.landing');
+    return Inertia::render('landing');
 })->name('keunggulan');
 
 Route::get('/testimoni', function () {
-    return view('landing.landing');
+    return Inertia::render('landing');
 })->name('testimoni');
 
 Route::get('/faq', function () {
-    return view('landing.landing');
+    return Inertia::render('landing');
 })->name('faq');
 
 // --- RUTE MEMBER AUTH ---
