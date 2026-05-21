@@ -8,7 +8,8 @@ use App\Services\AcademyPortalService;
 use App\Services\PackageInventoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class AdminDashboardController extends Controller
 {
@@ -17,19 +18,19 @@ class AdminDashboardController extends Controller
         private readonly PackageInventoryService $packageService,
     ) {}
 
-    public function dashboard(): View
+    public function dashboard(): Response
     {
-        return view('backend.dashboard', $this->portalService->adminDashboard());
+        return Inertia::render('admin/dashboard', $this->portalService->adminDashboard());
     }
 
-    public function users(): View
+    public function users(): Response
     {
-        return view('backend.users.index', $this->portalService->adminUsers());
+        return Inertia::render('admin/users/index', $this->portalService->adminUsers());
     }
 
-    public function createUser(): View
+    public function createUser(): Response
     {
-        return view('backend.users.create');
+        return Inertia::render('admin/users/create');
     }
 
     public function storeUser(Request $request): RedirectResponse
@@ -37,9 +38,9 @@ class AdminDashboardController extends Controller
         return $this->portalService->storeUser($request);
     }
 
-    public function editUser(Member $member): View
+    public function editUser(Member $member): Response
     {
-        return view('backend.users.edit', ['member' => $member]);
+        return Inertia::render('admin/users/edit', ['member' => $member]);
     }
 
     public function updateUser(Request $request, Member $member): RedirectResponse
@@ -52,17 +53,17 @@ class AdminDashboardController extends Controller
         return $this->portalService->destroyUser($member);
     }
 
-    public function tryoutDetail(LearningPackage $package): View
+    public function tryoutDetail(LearningPackage $package): Response
     {
-        return view('backend.package-inventory.detail', [
+        return Inertia::render('admin/packages/detail', [
             ...$this->packageService->getPackageFormPage($package),
             'package' => $package,
             'questions' => $this->portalService->packageQuestions($package),
         ]);
     }
 
-    public function leaderboard(): View
+    public function leaderboard(): Response
     {
-        return view('backend.leaderboard.index', $this->portalService->adminLeaderboard());
+        return Inertia::render('admin/leaderboard/index', $this->portalService->adminLeaderboard());
     }
 }
