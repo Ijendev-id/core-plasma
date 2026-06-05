@@ -23,13 +23,11 @@ class AcademyPortalService
         $member = $this->currentMember();
         $progress = $this->memberProgress($member);
         $recentResults = $this->memberRecentResults($member);
-        $ranking = $this->rankingRows(4);
 
         return [
             'member' => $member,
             'progress' => $progress,
             'recentResults' => $recentResults,
-            'ranking' => $ranking,
         ];
     }
 
