@@ -23,18 +23,12 @@ interface Package {
     duration: string;
 }
 
-interface Article {
-    title: string;
-    description: string;
-}
-
 interface Props {
     myTryouts: MyTryout[];
     packages: Package[];
-    articles: Article[];
 }
 
-export default function Tryouts({ myTryouts, packages, articles }: Props) {
+export default function Tryouts({ myTryouts, packages }: Props) {
     return (
         <PortalLayout>
             <Head title="Paket Try Out" />
@@ -123,24 +117,6 @@ export default function Tryouts({ myTryouts, packages, articles }: Props) {
                             ))
                         )}
                     </div>
-                </section>
-
-                {/* CTA Banner */}
-                <section className="mt-8 overflow-hidden rounded-3xl bg-gradient-to-r from-[#a80606] to-[#d31325] p-8 text-white shadow-[0_20px_50px_rgba(168,6,6,0.18)]">
-                    <h2 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Butuh Konsultasi Strategi Belajar?</h2>
-                    <p className="mt-3 max-w-xl text-sm leading-6 text-white/80">Bingung mulai dari mana? Konsultasikan targetmu dan susun rencana belajar yang realistis.</p>
-                    <button className="mt-5 rounded-xl bg-[#ffd12e] px-5 py-3 text-sm font-bold text-[#311300]">Jadwalkan</button>
-                </section>
-
-                {/* Artikel */}
-                <section className="mt-8 grid gap-5 md:grid-cols-2">
-                    {articles.map((article, i) => (
-                        <article key={i} className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-                            <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">Artikel</p>
-                            <h3 className="mt-3 text-lg font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{article.title}</h3>
-                            <p className="mt-2 text-sm leading-6 text-[#727783]">{article.description}</p>
-                        </article>
-                    ))}
                 </section>
             </section>
         </PortalLayout>

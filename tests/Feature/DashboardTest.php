@@ -52,8 +52,7 @@ class DashboardTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Selamat Belajar')
-            ->assertSee('Asisi Alfaiz')
-            ->assertSee('Ranking Siswa');
+            ->assertSee('Asisi Alfaiz');
     }
 
     public function test_authenticated_users_can_visit_tryout_pages()

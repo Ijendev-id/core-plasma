@@ -35,7 +35,7 @@ export default function PortalDashboard({ member, progress, recentResults }: Pro
                         Selesaikan progres belajarmu hari ini dan lanjutkan simulasi tryout yang tertunda.
                     </p>
                     <Link href={route('tryouts.index')} className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#a80606]">
-                        Lanjut Belajar
+                        Mulai Tryout
                     </Link>
                 </div>
 

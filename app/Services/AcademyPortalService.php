@@ -83,21 +83,38 @@ class AcademyPortalService
                     'duration' => $this->durationFor($package->category),
                 ])
                 ->all(),
-            'articles' => [
-                ['title' => 'Rutin Belajar Bareng Mentor', 'description' => 'Latihan terarah dengan pembahasan singkat dan tajam.'],
-                ['title' => 'Intensif Tryout SKD', 'description' => 'Peta kekuatanmu sebelum masuk simulasi utama.'],
-            ],
         ];
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function leaderboard(): array
+    public function leaderboard(?string $packageSlug = null): array
     {
-        $attempts = $this->topAttempts(12);
+        $packages = LearningPackage::query()
+            ->where('status', 'published')
+            ->orderBy('id')
+            ->get(['id', 'name', 'slug', 'price']);
+
+        $selected = $packageSlug
+            ? $packages->firstWhere('slug', $packageSlug) ?? $packages->first()
+            : $packages->first();
+
+        $attempts = $selected ? $this->topAttempts(12, $selected->id) : collect();
+        $isLocked = $selected && $selected->price > 0;
 
         return [
+            'packages' => $packages->map(fn (LearningPackage $p): array => [
+                'name' => $p->name,
+                'slug' => $p->slug,
+                'price' => $p->price,
+            ])->all(),
+            'selectedPackage' => $selected ? [
+                'name' => $selected->name,
+                'slug' => $selected->slug,
+                'price' => $selected->price,
+            ] : null,
+            'isLocked' => $isLocked,
             'podium' => $attempts
                 ->take(3)
                 ->values()
@@ -378,23 +395,11 @@ class AcademyPortalService
             ->all();
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function rankingRows(int $limit): array
-    {
-        return $this->topAttempts($limit)
-            ->map(fn (TryoutAttempt $attempt): array => [
-                'name' => $attempt->member?->name ?? 'Member',
-                'score' => $attempt->score,
-            ])
-            ->all();
-    }
-
-    private function topAttempts(int $limit)
+    private function topAttempts(int $limit, ?int $packageId = null)
     {
         return TryoutAttempt::query()
             ->with(['member', 'learningPackage'])
+            ->when($packageId, fn ($q) => $q->where('learning_package_id', $packageId))
             ->whereNotNull('finished_at')
             ->orderByDesc('score')
             ->orderBy('duration_seconds')
