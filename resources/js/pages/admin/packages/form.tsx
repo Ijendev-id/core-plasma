@@ -5,6 +5,7 @@ interface PackageFormData {
     name: string;
     category: string;
     question_count: number;
+    duration_minutes: number;
     participants_count: number;
     price: number;
     status: string;
@@ -29,6 +30,7 @@ export default function PackageForm({ title, action, method, package: pkg, categ
         name: pkg.name,
         category: pkg.category,
         question_count: pkg.question_count,
+        duration_minutes: pkg.duration_minutes,
         participants_count: pkg.participants_count,
         price: pkg.price,
         status: pkg.status,
@@ -136,6 +138,22 @@ export default function PackageForm({ title, action, method, package: pkg, categ
                                     className="mt-2 h-12 w-full rounded-xl border border-[#e0dddd] bg-[#f8f7f7] px-4 text-sm font-semibold text-[#1b1c1c] outline-none transition focus:border-[#00407f] focus:bg-white focus:ring-2 focus:ring-[#00407f]/10"
                                 />
                                 {errors.question_count && <p className="mt-2 text-sm font-semibold text-[#a80606]">{errors.question_count}</p>}
+                            </div>
+
+                            {/* Duration */}
+                            <div>
+                                <label htmlFor="duration_minutes" className="text-xs font-semibold uppercase tracking-[0.8px] text-[#727783]">Durasi (menit)</label>
+                                <input
+                                    id="duration_minutes"
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={data.duration_minutes}
+                                    onChange={(e) => setData('duration_minutes', Number(e.target.value.replace(/\D/g, '')) || 0)}
+                                    required
+                                    placeholder="mis. 90"
+                                    className="mt-2 h-12 w-full rounded-xl border border-[#e0dddd] bg-[#f8f7f7] px-4 text-sm font-semibold text-[#1b1c1c] outline-none transition focus:border-[#00407f] focus:bg-white focus:ring-2 focus:ring-[#00407f]/10"
+                                />
+                                {errors.duration_minutes && <p className="mt-2 text-sm font-semibold text-[#a80606]">{errors.duration_minutes}</p>}
                             </div>
 
                             {/* Participants */}

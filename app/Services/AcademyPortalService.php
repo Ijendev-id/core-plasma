@@ -80,7 +80,9 @@ class AcademyPortalService
                     'question_count' => $package->questions_count ?: $package->question_count,
                     'progress' => (int) ($progressByPackage[$package->id] ?? 0),
                     'price' => 'Rp '.number_format($package->price, 0, ',', '.'),
-                    'duration' => $this->durationFor($package->category),
+                    'duration' => $package->duration_minutes > 0
+                        ? $package->duration_minutes.' menit'
+                        : $this->durationFor($package->category),
                 ])
                 ->all(),
         ];

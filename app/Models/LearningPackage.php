@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'slug',
     'category',
     'question_count',
+    'duration_minutes',
     'participants_count',
     'price',
     'status',
@@ -67,6 +68,7 @@ class LearningPackage extends Model
     {
         return [
             'question_count' => 'integer',
+            'duration_minutes' => 'integer',
             'participants_count' => 'integer',
             'price' => 'integer',
             'show_participant_preview' => 'boolean',

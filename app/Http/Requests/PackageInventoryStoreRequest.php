@@ -18,6 +18,7 @@ class PackageInventoryStoreRequest extends FormRequest
         $this->merge([
             'category' => Str::upper((string) $this->input('category')),
             'question_count' => $this->numericInput('question_count'),
+            'duration_minutes' => $this->numericInput('duration_minutes'),
             'participants_count' => $this->numericInput('participants_count'),
             'price' => $this->numericInput('price'),
             'show_participant_preview' => $this->boolean('show_participant_preview'),
@@ -33,6 +34,7 @@ class PackageInventoryStoreRequest extends FormRequest
             'name' => ['required', 'string', 'max:120'],
             'category' => ['required', 'string', 'max:60'],
             'question_count' => ['required', 'integer', 'min:0', 'max:100000'],
+            'duration_minutes' => ['required', 'integer', 'min:0', 'max:100000'],
             'participants_count' => ['required', 'integer', 'min:0', 'max:10000000'],
             'price' => ['required', 'integer', 'min:0', 'max:1000000000'],
             'status' => ['required', Rule::in(['published', 'draft'])],
