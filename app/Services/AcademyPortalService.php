@@ -183,7 +183,7 @@ class AcademyPortalService
                 ->get()
                 ->map(fn (Member $member): array => [
                     'name' => $member->name,
-                    'role' => $member->learning_packages_count.' paket aktif',
+                    'role' => $member->learning_packages_count.' tryout aktif',
                     'status' => $member->learning_packages_count > 0 ? 'Active' : 'Pending',
                 ])
                 ->all(),
@@ -210,7 +210,7 @@ class AcademyPortalService
                         'name' => $member->name,
                         'email' => $member->email,
                         'education' => $member->pendidikan_terakhir ?? '-',
-                        'package' => $package?->name ?? 'Belum ada paket',
+                        'package' => $package?->name ?? 'Belum ada tryout',
                         'status' => ucfirst($status),
                     ];
                 })
@@ -281,9 +281,19 @@ class AcademyPortalService
                 ['label' => 'Average Score', 'value' => number_format($averageScore, 1)],
                 ['label' => 'Live Tryout', 'value' => number_format(LearningPackage::query()->where('status', 'published')->count())],
             ],
+            'packages' => LearningPackage::query()
+                ->orderBy('name')
+                ->get(['slug', 'name'])
+                ->map(fn (LearningPackage $package): array => [
+                    'slug' => $package->slug,
+                    'name' => $package->name,
+                ])
+                ->all(),
             'rows' => $attempts
                 ->map(fn (TryoutAttempt $attempt): array => [
                     'name' => $attempt->member?->name ?? 'Member',
+                    'package' => $attempt->learningPackage?->name ?? '-',
+                    'package_slug' => $attempt->learningPackage?->slug ?? '',
                     'score' => $attempt->score,
                     'time' => $this->formatDuration($attempt->duration_seconds),
                     'status' => $this->attemptStatus($attempt->status),
@@ -298,17 +308,30 @@ class AcademyPortalService
     public function packageQuestions(LearningPackage $package): array
     {
         return $package->questions()
-            ->withCount('answers')
+            ->with('answers')
             ->orderBy('order_number')
             ->get()
-            ->map(fn (TryoutQuestion $question): array => [
-                'id' => $question->id,
-                'type' => $question->section,
-                'text' => $question->prompt,
-                'status' => $question->is_active ? 'Active' : 'Draft',
-                'points' => $question->points,
-                'answers_count' => $question->answers_count,
-            ])
+            ->map(function (TryoutQuestion $question): array {
+                $answers = $question->answers->keyBy('label');
+
+                return [
+                    'id' => $question->id,
+                    'order_number' => $question->order_number,
+                    'section' => $question->section,
+                    'type' => $question->section,
+                    'text' => $question->prompt,
+                    'prompt' => $question->prompt,
+                    'attachment_path' => $question->attachment_path ?? '',
+                    'status' => $question->is_active ? 'Active' : 'Draft',
+                    'is_active' => $question->is_active,
+                    'points' => $question->points,
+                    'answers_count' => $question->answers->count(),
+                    'correct_label' => $answers->firstWhere('is_correct', true)?->label ?? 'A',
+                    'answers' => collect(['A', 'B', 'C', 'D', 'E'])
+                        ->mapWithKeys(fn (string $label): array => [$label => $answers->get($label)?->answer_text ?? ''])
+                        ->all(),
+                ];
+            })
             ->all();
     }
 

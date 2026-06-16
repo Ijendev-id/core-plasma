@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class PackageInventoryService
 {
-    private const PER_PAGE = 4;
+    private const PER_PAGE = 10;
 
     /**
      * @param  array<string, mixed>  $filters
@@ -38,6 +38,8 @@ class PackageInventoryService
             'filters' => [
                 'search' => $filters['search'] ?? '',
                 'status' => $filters['status'] ?? '',
+                'sort' => $filters['sort'] ?? '',
+                'direction' => $filters['direction'] ?? 'asc',
             ],
             'helpers' => [
                 'bulk_upload' => [
@@ -117,16 +119,52 @@ class PackageInventoryService
      */
     private function packagesQuery(array $filters): Builder
     {
+        [$sort, $direction] = $this->resolveSort($filters);
+
         return LearningPackage::query()
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
             ->when($filters['search'] ?? null, function ($query, string $search): void {
-                $query->where(function ($query) use ($search): void {
-                    $query
-                        ->where('name', 'like', "%{$search}%")
-                        ->orWhere('category', 'like', "%{$search}%");
-                });
+                $term = trim($search);
+
+                // Short terms (< 4 chars) are ignored by MySQL FULLTEXT, so fall back to LIKE.
+                if (mb_strlen($term) < 4) {
+                    $query->where(function ($query) use ($term): void {
+                        $query
+                            ->where('name', 'like', "%{$term}%")
+                            ->orWhere('category', 'like', "%{$term}%");
+                    });
+
+                    return;
+                }
+
+                // Boolean-mode with a trailing wildcard so partial words still match.
+                $boolean = collect(preg_split('/\s+/', $term))
+                    ->filter()
+                    ->map(fn (string $word): string => '+'.$word.'*')
+                    ->implode(' ');
+
+                $query->whereFullText(['name', 'category'], $boolean, ['mode' => 'boolean']);
             })
-            ->orderBy('id');
+            ->orderBy($sort, $direction);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return array{0: string, 1: string}
+     */
+    private function resolveSort(array $filters): array
+    {
+        $allowed = [
+            'name' => 'name',
+            'questions' => 'question_count',
+            'participants' => 'participants_count',
+            'price' => 'price',
+        ];
+
+        $sort = $allowed[$filters['sort'] ?? ''] ?? 'id';
+        $direction = strtolower((string) ($filters['direction'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        return [$sort, $direction];
     }
 
     /**
@@ -135,40 +173,12 @@ class PackageInventoryService
     private function stats(): array
     {
         $total = LearningPackage::query()->count();
-        $published = LearningPackage::query()->where('status', 'published')->count();
-        $participants = LearningPackage::query()->sum('participants_count');
-        $revenue = LearningPackage::query()
-            ->where('status', 'published')
-            ->get(['price', 'participants_count'])
-            ->sum(fn (LearningPackage $package): int => $package->price * max(1, $package->participants_count));
 
         return [
             [
-                'label' => 'TOTAL PACKAGES',
+                'label' => 'TOTAL TRYOUT',
                 'value' => (string) $total,
                 'accent' => 'blue',
-                'meta' => '+12%',
-                'meta_type' => 'trend',
-            ],
-            [
-                'label' => 'ACTIVE PARTICIPANTS',
-                'value' => $this->formatCompactNumber($participants),
-                'accent' => 'amber',
-                'meta' => 'Live',
-                'meta_type' => 'live',
-            ],
-            [
-                'label' => 'PUBLISHED RATE',
-                'value' => $total === 0 ? '0%' : round(($published / $total) * 100).'%',
-                'accent' => 'green',
-                'meta' => $total === 0 ? 0 : (int) round(($published / $total) * 100),
-                'meta_type' => 'progress',
-            ],
-            [
-                'label' => 'PREMIUM REVENUE',
-                'value' => $this->formatCompactRupiah($revenue),
-                'accent' => 'premium',
-                'meta_type' => 'premium',
             ],
         ];
     }
@@ -185,10 +195,7 @@ class PackageInventoryService
             'tone' => $package->tone,
             'category' => $package->category,
             'questions' => number_format($package->question_count).' Items',
-            'participants' => $package->show_participant_preview
-                ? '+'.$this->formatCompactNumber($package->participants_count)
-                : number_format($package->participants_count),
-            'has_participant_preview' => $package->show_participant_preview,
+            'participants' => number_format($package->participants_count),
             'price' => $this->formatRupiah($package->price),
             'status' => $package->status,
             'status_label' => Str::headline($package->status),
@@ -236,8 +243,11 @@ class PackageInventoryService
      */
     private function categories(): array
     {
-        return collect(['KEDINASAN', 'UNIVERSITY', 'CAREER'])
+        return \App\Models\TryoutCategory::query()
+            ->orderBy('name')
+            ->pluck('name')
             ->merge(LearningPackage::query()->distinct()->orderBy('category')->pluck('category'))
+            ->filter()
             ->unique()
             ->values()
             ->all();
@@ -285,36 +295,5 @@ class PackageInventoryService
     private function formatRupiah(int $value): string
     {
         return 'Rp '.number_format($value, 0, ',', '.');
-    }
-
-    private function formatCompactRupiah(int $value): string
-    {
-        if ($value >= 1_000_000_000) {
-            return 'Rp '.$this->trimDecimal($value / 1_000_000_000).'B';
-        }
-
-        if ($value >= 1_000_000) {
-            return 'Rp '.$this->trimDecimal($value / 1_000_000).'M';
-        }
-
-        return $this->formatRupiah($value);
-    }
-
-    private function formatCompactNumber(int|float $value): string
-    {
-        if ($value >= 1_000_000) {
-            return $this->trimDecimal($value / 1_000_000).'M';
-        }
-
-        if ($value >= 1_000) {
-            return $this->trimDecimal($value / 1_000).'k';
-        }
-
-        return (string) number_format($value);
-    }
-
-    private function trimDecimal(float $value): string
-    {
-        return rtrim(rtrim(number_format($value, 1), '0'), '.');
     }
 }

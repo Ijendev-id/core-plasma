@@ -39,16 +39,19 @@ export default function AdminLayout({ children }: Props) {
                         href={route('admin.packages.index')}
                         className={`rounded-lg px-3 py-3 ${route().current('admin.packages.*') ? 'bg-[#fff1f1] text-[#d40f22]' : 'hover:bg-[#f6f3f2]'}`}
                     >
-                        Package Inventory
+                        Tryout Inventory
+                    </Link>
+                    <Link
+                        href={route('admin.taxonomy.index')}
+                        className={`rounded-lg px-3 py-3 ${route().current('admin.taxonomy.*') ? 'bg-[#fff1f1] text-[#d40f22]' : 'hover:bg-[#f6f3f2]'}`}
+                    >
+                        Kategori &amp; Section
                     </Link>
                     <Link
                         href={route('admin.leaderboard.index')}
                         className={`rounded-lg px-3 py-3 ${route().current('admin.leaderboard.*') ? 'bg-[#fff1f1] text-[#d40f22]' : 'hover:bg-[#f6f3f2]'}`}
                     >
                         Leaderboard
-                    </Link>
-                    <Link href={route('dashboard')} className="rounded-lg px-3 py-3 hover:bg-[#f6f3f2]">
-                        Student Portal
                     </Link>
                 </nav>
                 <Link

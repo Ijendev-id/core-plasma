@@ -22,6 +22,14 @@ class TryoutQuestionController extends Controller
             ->with('status', 'Soal berhasil ditambahkan.');
     }
 
+    public function update(TryoutQuestionStoreRequest $request, LearningPackage $package, TryoutQuestion $question): RedirectResponse
+    {
+        $this->service->updateQuestion($package, $question, $request->validated());
+
+        return to_route('admin.packages.tryout', $package)
+            ->with('status', 'Soal berhasil diperbarui.');
+    }
+
     public function destroy(LearningPackage $package, TryoutQuestion $question): RedirectResponse
     {
         $this->service->deleteQuestion($package, $question);
