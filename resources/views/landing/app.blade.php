@@ -6,6 +6,12 @@
     <title>Core Plasma - Kuasai Materi</title>
 
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 </head>
 <body>
 

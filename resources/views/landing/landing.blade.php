@@ -12,7 +12,7 @@
                     <span class="text-red">Impianmu.</span>
                 </h1>
                 <p>Metode belajar revolusioner yang dirancang untuk mempercepat pemahaman materi sulit menjadi konsep yang menyenangkan.</p>
-                <a href="#paket" class="btn-primary">Lihat Paket Belajar</a>
+                <a href="#paket" class="btn-primary">Lihat Try Out Gratis</a>
 
                 <div class="social-proof">
                     <div class="avatars">
@@ -45,39 +45,39 @@
             <div class="article-grid">
                 <div class="article-card">
                     <div class="card-img-wrap">
-                        <span class="badge-tag">TIPS & TRIK</span>
+                        <span class="badge-tag">CPNS & PPPK</span>
                         <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Artikel 1">
                     </div>
                     <div class="card-content">
-                        <span class="date">24 Mei 2024</span>
-                        <h3>Strategi Menjawab Soal Literasi Bahasa Inggris di UTBK 2024</h3>
-                        <p>Kuasai teknik scanning dan skimming untuk menghemat waktu pengerjaan soal bacaan...</p>
+                        <span class="date">Desember 2025</span>
+                        <h3>Strategi Jitu Lolos CPNS & PPPK dengan Skor Maksimal</h3>
+                        <p>Pahami tipe soal ASN, kuasai time management, dan strategi mengerjakan soal CAT untuk meraih nilai tertinggi di seleksi CPNS & PPPK 2026...</p>
                         <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
                     </div>
                 </div>
 
                 <div class="article-card">
                     <div class="card-img-wrap">
-                        <span class="badge-tag tag-yellow">INFO KAMPUS</span>
+                        <span class="badge-tag tag-yellow">BUMN & KEDINASAN</span>
                         <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Artikel 2">
                     </div>
                     <div class="card-content">
-                        <span class="date">20 Mei 2024</span>
-                        <h3>Daftar Jurusan Paling Ketat di Universitas Indonesia (UI) Tahun Ini</h3>
-                        <p>Simak data keketatan prodi SAINTEK dan SOSHUM sebagai referensi pemilihan jurusan di jalur SNBT...</p>
+                        <span class="date">November 2025</span>
+                        <h3>Tips Ampuh Lolos Seleksi BUMN dan Kedinasan dengan Percaya Diri</h3>
+                        <p>Analisis soal BUMN, pahami kompetensi yang diuji, dan strategi interview untuk diterima bekerja di BUMN dan Akademi Kedinasan impianmu...</p>
                         <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
                     </div>
                 </div>
 
                 <div class="article-card">
                     <div class="card-img-wrap">
-                        <span class="badge-tag">MOTIVASI</span>
+                        <span class="badge-tag">UTBK & PTN</span>
                         <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Artikel 3">
                     </div>
                     <div class="card-content">
-                        <span class="date">18 Mei 2024</span>
-                        <h3>Pentingnya Mental Health Selama Menghadapi Persiapan Ujian Nasional</h3>
-                        <p>Jangan sampai burnout! Inilah tips menjaga keseimbangan mental agar tetap fokus saat belajar...</p>
+                        <span class="date">Oktober 2025</span>
+                        <h3>Raih Skor UTBK Tertinggi dengan Metode Belajar Revolusioner</h3>
+                        <p>Kuasai seluruh subtes UTBK (TPS, Literasi, Penalaran), manfaatkan try out berkala, dan maksimalkan peluang lolos PTN di jalur SNBT...</p>
                         <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
                     </div>
                 </div>
@@ -89,55 +89,42 @@
         <div class="container text-center">
             <div class="section-header align-center">
                 <p class="subtitle">INVESTASI MASA DEPAN</p>
-                <h2>Pilih Paket <span class="text-red">Juaramu</span></h2>
-                <p class="desc">Pilih paket yang paling sesuai dengan kebutuhan belajarmu.</p>
+                <h2>Pilih Try Out  <span class="text-red">Juaramu</span></h2>
+                <p class="desc">Pilih try out CPNS | PPPK | Kedinasan | UTBK Gratis hanya di core plasma</p>
             </div>
 
             <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h4>Tryout</h4>
-                    <div class="price">
-                        <h2>Rp 149k</h2><span>/bulan</span>
+                @forelse($packages as $index => $package)
+                    <div class="pricing-card @if($index === 1) featured @endif">
+                        @if($index === 1)
+                            <div class="ribbon">TERBARU</div>
+                        @endif
+                        <h4 @if($index === 1) class="text-red" @endif>{{ $package->name }}</h4>
+                        <div class="price">
+                            <h2>Rp {{ number_format($package->price / 1000, 0, ',', '.') }}k</h2><span>/bulan</span>
+                        </div>
+                        <p class="pricing-desc">{{ $package->category }}</p>
+                        <ul class="features">
+                            @if($package->question_count > 0)
+                                <li><span class="icon-check{{ $index === 1 ? '-red' : '' }}">&#10003;</span> {{ $package->question_count }} Soal Try Out</li>
+                            @endif
+                            @if($package->participants_count > 0)
+                                <li><span class="icon-check{{ $index === 1 ? '-red' : '' }}">&#10003;</span> {{ $package->participants_count }}+ Peserta Aktif</li>
+                            @endif
+                        </ul>
+                        <a href="{{ $index === 1 ? route('member.register') : '#' }}" class="btn-pricing {{ $index === 1 ? 'btn-primary-block' : 'btn-outline' }}">
+                            @if($index === 1)
+                                Daftar Sekarang
+                            @else
+                                Pilih Paket
+                            @endif
+                        </a>
                     </div>
-                    <p class="pricing-desc">BUNDLING 3 TO SKD 2026 PART 27, 28, 29| Berisi 3 Paket Try Out dengan soal HOTS berdasarkan pengalaman peserta SKD</p>
-                    <ul class="features">
-                        <li><span class="icon-check">&#10003;</span> Akses 50 Video Materi</li>
-                        <li><span class="icon-check">&#10003;</span> Bank Soal Harian</li>
-                        <li class="disabled"><span class="icon-x">&#10005;</span> Try Out Nasional</li>
-                    </ul>
-                    <a href="#" class="btn-pricing btn-outline">Pilih Paket</a>
-                </div>
-
-                <div class="pricing-card featured">
-                    <div class="ribbon">TERPOPULER</div>
-                    <h4 class="text-red">Tryout</h4>
-                    <div class="price">
-                        <h2>Rp 299k</h2><span>/bulan</span>
+                @empty
+                    <div class="pricing-card">
+                        <p>Paket belajar sedang dalam persiapan. Silakan kembali lagi nanti.</p>
                     </div>
-                    <p class="pricing-desc">BUNDLING 10 TO PERSUBTEST SNBT 2026 PART 2-11 | Berisi 10 Paket Try Out Persubtest dengan soal HOTS TPS dan Literasi berdasarkan pengalaman peserta UTBK 2025</p>
-                    <ul class="features">
-                        <li><span class="icon-check-red">&#10003;</span> Akses Seluruh Video</li>
-                        <li><span class="icon-check-red">&#10003;</span> 10x Try Out Nasional</li>
-                        <li><span class="icon-check-red">&#10003;</span> Konsultasi Lewat WA</li>
-                        <li><span class="icon-check-red">&#10003;</span> Modul Fisik Dikirim</li>
-                    </ul>
-                    <a href="{{ route('member.register') }}" class="btn-pricing btn-primary-block">Daftar Sekarang</a>
-                </div>
-
-                <div class="pricing-card">
-                    <h4>Tryout</h4>
-                    <div class="price">
-                        <h2>Rp 599k</h2><span>/bulan</span>
-                    </div>
-                    <p class="pricing-desc">BUNDLING 1 Paket Try Out selekesi masuk BUMN</p>
-
-                    <ul class="features">
-                        <li><span class="icon-check-red">&#10003;</span> Semua Fitur Paket Pro</li>
-                        <li><span class="icon-check-red">&#10003;</span> Live Session Private</li>
-                        <li><span class="icon-check-red">&#10003;</span> Jaminan Lolos PTN*</li>
-                    </ul>
-                    <a href="#" class="btn-pricing btn-outline">Pilih Paket</a>
-                </div>
+                @endforelse
             </div>
         </div>
     </section>
@@ -160,7 +147,7 @@
                         <div class="stat-icon">&#9733;</div>
                         <div class="stat-text text-white">
                             <strong class="large-num">98%</strong>
-                            <small>Tingkat Kepuasan Siswa</small>
+                            <small>Tingkat Kepuasan Pengguna</small>
                         </div>
                     </div>
                     <img src="https://images.unsplash.com/photo-1456406644174-8ddd4cd52a06?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Menulis Notes" class="img-radius">
@@ -169,7 +156,7 @@
 
             <div class="about-content" id="keunggulan">
                 <p class="subtitle">TENTANG KAMI</p>
-                <h2>Membangun Masa Depan Melalui <br> <span class="text-red">Edukasi Berdaya</span></h2>
+                <h2>Membangun Masa Depan Melalui <br> <span class="text-red">Platform Try Out Terbaik</span></h2>
 
                 <div class="vision-mission-list">
                     <div class="vm-item">
@@ -178,7 +165,7 @@
                         </div>
                         <div class="vm-text">
                             <h4>Visi Kami</h4>
-                            <p>Menjadi katalisator utama dalam dunia pendidikan digital Indonesia, membantu setiap siswa meraih potensi maksimal mereka tanpa hambatan biaya dan jarak.</p>
+                            <p>Menjadi Platform Try Out Terbaik yang membantu lolos CPNS PPPK kedinasan BUMN atau Perguruan Tinggi Negeri</p>
                         </div>
                     </div>
 

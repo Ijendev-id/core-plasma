@@ -1,14 +1,14 @@
 <header class="header-wrapper">
     <nav class="navbar container">
-        <a href="{{ route('home') }}" class="logo">Core Plasma</a>
+        <a href="#beranda" class="logo">Core Plasma</a>
 
         <ul class="nav-links">
-            <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a></li>
-            <li><a href="{{ route('artikel') }}" class="{{ request()->routeIs('artikel') ? 'active' : '' }}">Artikel</a></li>
-            <li><a href="{{ route('paket') }}" class="{{ request()->routeIs('paket') ? 'active' : '' }}">Paket Belajar</a></li>
-            <li><a href="{{ route('keunggulan') }}" class="{{ request()->routeIs('keunggulan') ? 'active' : '' }}">Keunggulan</a></li>
-            <li><a href="{{ route('testimoni') }}" class="{{ request()->routeIs('testimoni') ? 'active' : '' }}">Testimoni</a></li>
-            <li><a href="{{ route('faq') }}" class="{{ request()->routeIs('faq') ? 'active' : '' }}">FAQ</a></li>
+            <li><a href="#beranda" class="nav-link">Beranda</a></li>
+            <li><a href="#artikel" class="nav-link">Artikel</a></li>
+            <li><a href="#paket" class="nav-link">Try Out</a></li>
+            <li><a href="#keunggulan" class="nav-link">Keunggulan</a></li>
+            <li><a href="#testimoni" class="nav-link">Testimoni</a></li>
+            <li><a href="#faq" class="nav-link">FAQ</a></li>
         </ul>
 
         <div class="nav-buttons">
