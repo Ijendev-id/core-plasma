@@ -6,12 +6,17 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\PackageInventoryController;
 use App\Http\Controllers\TryoutQuestionController;
+use App\Models\LearningPackage;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // --- RUTE HALAMAN UTAMA (LANDING PAGE) ---
 Route::get('/', function () {
-    return Inertia::render('landing');
+    $packages = LearningPackage::where('status', 'published')
+        ->orderBy('published_at', 'desc')
+        ->limit(3)
+        ->get();
+    return view('landing.landing', ['packages' => $packages]);
 })->name('home');
 
 // --- RUTE AUTHENTICATION (LOGIN) ---

@@ -121,49 +121,38 @@
             </div>
 
             <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h4>Starter</h4>
-                    <div class="price">
-                        <h2>Rp 149k</h2><span>/bulan</span>
+                @forelse($packages as $index => $package)
+                    <div class="pricing-card @if($index === 1) featured @endif">
+                        @if($index === 1)
+                            <div class="ribbon">TERPOPULER</div>
+                        @endif
+                        <h4 @if($index === 1) class="text-red" @endif>{{ $package->name }}</h4>
+                        <div class="price">
+                            <h2>{{ 'Rp ' . number_format($package->price, 0, ',', '.') }}</h2><span>/bulan</span>
+                        </div>
+                        <p class="pricing-desc">{{ $package->category }}</p>
+                        <ul class="features">
+                            @if($package->question_count > 0)
+                                <li><span class="icon-check@if($index === 1)-red @endif">&#10003;</span> {{ $package->question_count }} Soal Try Out</li>
+                            @endif
+                            @if($package->participants_count > 0)
+                                <li><span class="icon-check@if($index === 1)-red @endif">&#10003;</span> {{ $package->participants_count }}+ Peserta Aktif</li>
+                            @endif
+                            <li><span class="icon-check@if($index === 1)-red @endif">&#10003;</span> Akses Penuh Materi</li>
+                        </ul>
+                        <a href="#" class="btn-pricing @if($index === 1) btn-primary-block @else btn-outline @endif">
+                            @if($index === 1)
+                                Daftar Sekarang
+                            @else
+                                Pilih Paket
+                            @endif
+                        </a>
                     </div>
-                    <p class="pricing-desc">Cocok untuk kamu yang ingin mencoba metode belajar Alfaiz.</p>
-                    <ul class="features">
-                        <li><span class="icon-check">&#10003;</span> Akses 50 Video Materi</li>
-                        <li><span class="icon-check">&#10003;</span> Bank Soal Harian</li>
-                        <li class="disabled"><span class="icon-x">&#10005;</span> Try Out Nasional</li>
-                    </ul>
-                    <a href="#" class="btn-pricing btn-outline">Pilih Paket</a>
-                </div>
-
-                <div class="pricing-card featured">
-                    <div class="ribbon">TERPOPULER</div>
-                    <h4 class="text-red">Pro</h4>
-                    <div class="price">
-                        <h2>Rp 299k</h2><span>/bulan</span>
+                @empty
+                    <div class="pricing-card">
+                        <p>Paket belajar sedang dalam persiapan. Silakan kembali lagi nanti.</p>
                     </div>
-                    <p class="pricing-desc">Pilihan terbaik untuk persiapan UTBK yang komprehensif.</p>
-                    <ul class="features">
-                        <li><span class="icon-check-red">&#10003;</span> Akses Seluruh Video</li>
-                        <li><span class="icon-check-red">&#10003;</span> 10x Try Out Nasional</li>
-                        <li><span class="icon-check-red">&#10003;</span> Konsultasi Lewat WA</li>
-                        <li><span class="icon-check-red">&#10003;</span> Modul Fisik Dikirim</li>
-                    </ul>
-                    <a href="#" class="btn-pricing btn-primary-block">Daftar Sekarang</a>
-                </div>
-
-                <div class="pricing-card">
-                    <h4>Ultimate</h4>
-                    <div class="price">
-                        <h2>Rp 599k</h2><span>/bulan</span>
-                    </div>
-                    <p class="pricing-desc">Privat eksklusif dengan pendampingan personal setiap hari.</p>
-                    <ul class="features">
-                        <li><span class="icon-check-red">&#10003;</span> Semua Fitur Paket Pro</li>
-                        <li><span class="icon-check-red">&#10003;</span> Live Session Private</li>
-                        <li><span class="icon-check-red">&#10003;</span> Jaminan Lolos PTN*</li>
-                    </ul>
-                    <a href="#" class="btn-pricing btn-outline">Pilih Paket</a>
-                </div>
+                @endforelse
             </div>
         </div>
     </section>
