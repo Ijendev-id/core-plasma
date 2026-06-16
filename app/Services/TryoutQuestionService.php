@@ -37,6 +37,36 @@ class TryoutQuestionService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function updateQuestion(LearningPackage $package, TryoutQuestion $question, array $data): TryoutQuestion
+    {
+        abort_unless($question->learning_package_id === $package->id, 404);
+
+        return DB::transaction(function () use ($question, $data): TryoutQuestion {
+            $question->update([
+                'section' => $data['section'],
+                'prompt' => $data['prompt'],
+                'attachment_path' => $data['attachment_path'] ?? null,
+                'points' => (int) $data['points'],
+                'is_active' => (bool) ($data['is_active'] ?? false),
+            ]);
+
+            foreach (['A', 'B', 'C', 'D', 'E'] as $label) {
+                $question->answers()->updateOrCreate(
+                    ['label' => $label],
+                    [
+                        'answer_text' => $data['answers'][$label],
+                        'is_correct' => $data['correct_label'] === $label,
+                    ],
+                );
+            }
+
+            return $question->load('answers');
+        });
+    }
+
     public function deleteQuestion(LearningPackage $package, TryoutQuestion $question): void
     {
         abort_unless($question->learning_package_id === $package->id, 404);

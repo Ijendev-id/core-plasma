@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\TryoutSection;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +24,7 @@ class TryoutQuestionStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'section' => ['required', Rule::in(['TWK', 'TIU', 'TKP'])],
+            'section' => ['required', Rule::in(TryoutSection::query()->pluck('code')->all())],
             'prompt' => ['required', 'string', 'min:12'],
             'attachment_path' => ['nullable', 'string', 'max:255'],
             'points' => ['required', 'integer', 'min:1', 'max:100'],

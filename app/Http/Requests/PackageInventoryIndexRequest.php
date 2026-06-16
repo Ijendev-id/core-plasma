@@ -21,6 +21,8 @@ class PackageInventoryIndexRequest extends FormRequest
             'page' => ['nullable', 'integer', 'min:1'],
             'search' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', Rule::in(['published', 'draft'])],
+            'sort' => ['nullable', Rule::in(['name', 'questions', 'participants', 'price'])],
+            'direction' => ['nullable', Rule::in(['asc', 'desc'])],
         ];
     }
 }

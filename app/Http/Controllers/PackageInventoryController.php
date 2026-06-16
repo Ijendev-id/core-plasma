@@ -36,8 +36,8 @@ class PackageInventoryController extends Controller
     {
         $package = $this->service->createPackage($request->validated());
 
-        return to_route('admin.packages.edit', $package)
-            ->with('status', 'Package berhasil dibuat.');
+        return to_route('admin.packages.tryout', $package)
+            ->with('status', 'Tryout berhasil dibuat. Silakan isi soal.');
     }
 
     public function edit(LearningPackage $package): Response

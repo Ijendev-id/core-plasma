@@ -1,12 +1,11 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '../../../layouts/AdminLayout';
 
 interface Stat {
     label: string;
     value: string;
     accent: string;
-    meta?: string | number;
-    meta_type?: string;
 }
 
 interface Package {
@@ -17,7 +16,6 @@ interface Package {
     category: string;
     questions: string;
     participants: string;
-    has_participant_preview: boolean;
     price: string;
     status: string;
     status_label: string;
@@ -36,12 +34,20 @@ interface Helpers {
     tip: { title: string; description: string };
 }
 
+interface Filters {
+    search: string;
+    status: string;
+    sort: string;
+    direction: string;
+}
+
 interface Props {
     stats: Stat[];
     packages: Package[];
     paginator: { previousPageUrl?: string; nextPageUrl?: string; url: (page: number) => string };
     pagination: Pagination;
     helpers: Helpers;
+    filters: Filters;
     flash?: { status?: string };
 }
 
@@ -55,6 +61,13 @@ const ACCENT_CLASSES: Record<string, string> = {
     blue: 'border-l-[#00407f]',
     amber: 'border-l-[#984800]',
     green: 'border-l-[#004b19]',
+};
+
+const SORTABLE: Record<string, string> = {
+    'Tryout Name': 'name',
+    Questions: 'questions',
+    Participants: 'participants',
+    Price: 'price',
 };
 
 function PackageIcon({ icon, className }: { icon: string; className?: string }) {
@@ -86,18 +99,63 @@ function PackageIcon({ icon, className }: { icon: string; className?: string }) 
     );
 }
 
-export default function PackagesIndex({ stats, packages, pagination, helpers, flash }: Props) {
+export default function PackagesIndex({ stats, packages, pagination, filters, flash }: Props) {
+    const [search, setSearch] = useState(filters.search ?? '');
+
+    function visit(params: Record<string, string | number | undefined>) {
+        const query: Record<string, string | number> = {};
+        const merged = {
+            search: filters.search,
+            status: filters.status,
+            sort: filters.sort,
+            direction: filters.direction,
+            ...params,
+        };
+        Object.entries(merged).forEach(([key, value]) => {
+            if (value !== undefined && value !== '' && !(key === 'direction' && !merged.sort)) {
+                query[key] = value as string | number;
+            }
+        });
+
+        router.get(route('admin.packages.index'), query, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    }
+
+    function handleSearch(e: React.FormEvent) {
+        e.preventDefault();
+        visit({ search, page: 1 });
+    }
+
+    function handleSort(column: string) {
+        const direction = filters.sort === column && filters.direction === 'asc' ? 'desc' : 'asc';
+        visit({ sort: column, direction, page: 1 });
+    }
+
     function handleDelete(slug: string, name: string) {
-        if (confirm(`Hapus package "${name}"?`)) {
+        if (confirm(`Hapus tryout "${name}"?`)) {
             router.delete(route('admin.packages.destroy', slug));
         }
     }
 
     const pages = Array.from({ length: Math.min(3, pagination.last_page) }, (_, i) => i + 1);
 
+    function pageQuery(page: number): Record<string, string | number> {
+        const query: Record<string, string | number> = { page };
+        if (filters.search) query.search = filters.search;
+        if (filters.status) query.status = filters.status;
+        if (filters.sort) {
+            query.sort = filters.sort;
+            query.direction = filters.direction;
+        }
+        return query;
+    }
+
     return (
         <AdminLayout>
-            <Head title="Package Inventory" />
+            <Head title="Tryout Inventory" />
             <main className="pb-[56px] pt-[112px] lg:ml-[288px] lg:w-[calc(100%-288px)] lg:px-12">
                 <div className="flex w-full flex-col gap-8 p-8">
                     {/* Header */}
@@ -105,7 +163,7 @@ export default function PackagesIndex({ stats, packages, pagination, helpers, fl
                         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                             <div>
                                 <h1 className="text-4xl font-extrabold leading-10 text-[#1b1c1c]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                    Package Inventory
+                                    Tryout Inventory
                                 </h1>
                                 <p className="mt-1 text-base font-medium leading-6 text-[#727783]">Manage and curate your elite academic tryout offerings.</p>
                             </div>
@@ -117,37 +175,17 @@ export default function PackagesIndex({ stats, packages, pagination, helpers, fl
                                     <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
                                     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
                                 </svg>
-                                <span>Create New Package</span>
+                                <span>Create New Tryout</span>
                             </Link>
                         </div>
 
                         {/* Stats */}
                         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
                             {stats.map((stat, i) => (
-                                stat.accent === 'premium' ? (
-                                    <article key={i} className="relative min-h-[108px] overflow-hidden rounded-xl bg-[#7f2000] p-6 text-white shadow-[0_20px_25px_-5px_rgba(0,64,127,0.1)]">
-                                        <p className="text-xs font-semibold uppercase leading-4 tracking-[0.6px] text-white/80">{stat.label}</p>
-                                        <p className="mt-2 text-3xl font-extrabold leading-9" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{stat.value}</p>
-                                    </article>
-                                ) : (
-                                    <article key={i} className={`${ACCENT_CLASSES[stat.accent] ?? 'border-l-[#00407f]'} min-h-[108px] rounded-xl border-l-4 bg-white px-6 py-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]`}>
-                                        <p className="text-xs font-semibold uppercase leading-4 tracking-[0.6px] text-[#727783]">{stat.label}</p>
-                                        <div className="mt-2 flex items-end justify-between gap-4">
-                                            <p className="text-3xl font-extrabold leading-9" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{stat.value}</p>
-                                            {stat.meta_type === 'trend' && (
-                                                <span className="inline-flex items-center gap-1 rounded-lg bg-[#8cfa96] px-2 py-1 text-xs font-semibold text-[#004b19]">{stat.meta}</span>
-                                            )}
-                                            {stat.meta_type === 'live' && (
-                                                <span className="rounded-lg bg-[#ffdbc8] px-2 py-1 text-xs font-semibold text-[#984800]">{stat.meta}</span>
-                                            )}
-                                            {stat.meta_type === 'progress' && (
-                                                <span className="mb-2 block h-2 w-16 overflow-hidden rounded-full bg-[#eae7e7]">
-                                                    <span className="block h-full rounded-full bg-[#004b19]" style={{ width: `${stat.meta}%` }} />
-                                                </span>
-                                            )}
-                                        </div>
-                                    </article>
-                                )
+                                <article key={i} className={`${ACCENT_CLASSES[stat.accent] ?? 'border-l-[#00407f]'} min-h-[108px] rounded-xl border-l-4 bg-white px-6 py-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]`}>
+                                    <p className="text-xs font-semibold uppercase leading-4 tracking-[0.6px] text-[#727783]">{stat.label}</p>
+                                    <p className="mt-2 text-3xl font-extrabold leading-9" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{stat.value}</p>
+                                </article>
                             ))}
                         </div>
                     </section>
@@ -160,20 +198,73 @@ export default function PackagesIndex({ stats, packages, pagination, helpers, fl
                             </div>
                         )}
 
+                        {/* Search */}
+                        <div className="px-4 pt-4">
+                            <form onSubmit={handleSearch} className="flex items-center gap-2">
+                                <div className="relative flex-1">
+                                    <svg className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#727783]" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+                                        <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    </svg>
+                                    <input
+                                        type="search"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        placeholder="Cari nama atau kategori tryout..."
+                                        className="h-11 w-full rounded-xl border border-[#e5e0df] bg-white pl-10 pr-4 text-sm font-medium outline-none focus:border-[#00407f]"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="h-11 rounded-xl bg-[#00407f] px-5 text-sm font-semibold text-white transition hover:bg-[#003366]"
+                                >
+                                    Search
+                                </button>
+                                {filters.search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setSearch(''); visit({ search: '', page: 1 }); }}
+                                        className="h-11 rounded-xl px-4 text-sm font-semibold text-[#727783] transition hover:bg-white"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
+                            </form>
+                        </div>
+
                         <div className="overflow-x-auto px-4 py-2">
                             <table className="w-full min-w-[800px] border-separate border-spacing-y-2 text-left">
                                 <thead>
                                     <tr>
-                                        {['Package Name', 'Category', 'Questions', 'Participants', 'Price', 'Aksi', 'Actions'].map((h) => (
-                                            <th key={h} className="px-6 py-4 text-xs font-semibold uppercase leading-4 tracking-[1.2px] text-[#727783]">{h}</th>
-                                        ))}
+                                        {['Tryout Name', 'Category', 'Questions', 'Participants', 'Price', 'Aksi', 'Actions'].map((h) => {
+                                            const sortKey = SORTABLE[h];
+                                            const active = sortKey && filters.sort === sortKey;
+                                            return (
+                                                <th key={h} className="px-6 py-4 text-xs font-semibold uppercase leading-4 tracking-[1.2px] text-[#727783]">
+                                                    {sortKey ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleSort(sortKey)}
+                                                            className={`inline-flex items-center gap-1 uppercase tracking-[1.2px] transition hover:text-[#1b1c1c] ${active ? 'text-[#00407f]' : ''}`}
+                                                        >
+                                                            {h}
+                                                            <span className="text-[9px] leading-none">
+                                                                {active ? (filters.direction === 'asc' ? '▲' : '▼') : '↕'}
+                                                            </span>
+                                                        </button>
+                                                    ) : (
+                                                        h
+                                                    )}
+                                                </th>
+                                            );
+                                        })}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {packages.length === 0 ? (
                                         <tr>
                                             <td colSpan={7} className="rounded-sm bg-white px-6 py-10 text-center text-sm font-medium text-[#727783]">
-                                                Package tidak ditemukan.
+                                                Tryout tidak ditemukan.
                                             </td>
                                         </tr>
                                     ) : (
@@ -194,17 +285,7 @@ export default function PackagesIndex({ stats, packages, pagination, helpers, fl
                                                     </td>
                                                     <td className="px-6 py-4 text-base font-medium text-[#727783]">{pkg.questions}</td>
                                                     <td className="px-6 py-4">
-                                                        {pkg.has_participant_preview ? (
-                                                            <div className="flex items-center">
-                                                                <span className="-mr-2 size-7 rounded-full border-2 border-white bg-[#e2e8f0]"></span>
-                                                                <span className="-mr-2 size-7 rounded-full border-2 border-white bg-[#cbd5e1]"></span>
-                                                                <span className={`${tone.avatar} inline-flex h-7 min-w-8 items-center justify-center rounded-full border-2 border-white px-1 text-[10px] font-semibold text-white`}>
-                                                                    {pkg.participants}
-                                                                </span>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-base font-medium text-[#1b1c1c]">{pkg.participants}</span>
-                                                        )}
+                                                        <span className="text-base font-medium text-[#1b1c1c]">{pkg.participants}</span>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <span className="block max-w-[86px] text-base font-semibold leading-tight text-[#00407f]">
@@ -254,11 +335,11 @@ export default function PackagesIndex({ stats, packages, pagination, helpers, fl
                         {/* Pagination */}
                         <div className="flex flex-col gap-4 bg-[#f0eded] px-6 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
                             <p className="text-xs font-medium leading-4 text-[#727783]">
-                                Showing {pagination.from} to {pagination.to} of {pagination.total} packages
+                                Showing {pagination.from} to {pagination.to} of {pagination.total} tryouts
                             </p>
                             <nav className="flex items-center gap-1" aria-label="Pagination">
                                 <Link
-                                    href={pagination.current > 1 ? route('admin.packages.index', { page: pagination.current - 1 }) : '#'}
+                                    href={pagination.current > 1 ? route('admin.packages.index', pageQuery(pagination.current - 1)) : '#'}
                                     className={`inline-flex size-8 items-center justify-center rounded-lg text-[#727783] transition ${pagination.current <= 1 ? 'pointer-events-none opacity-40' : 'hover:bg-white'}`}
                                 >
                                     <svg className="h-3 w-2" viewBox="0 0 8 12" fill="none"><path d="M6.5 1L1.5 6L6.5 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -266,7 +347,7 @@ export default function PackagesIndex({ stats, packages, pagination, helpers, fl
                                 {pages.map((page) => (
                                     <Link
                                         key={page}
-                                        href={route('admin.packages.index', { page })}
+                                        href={route('admin.packages.index', pageQuery(page))}
                                         className={`inline-flex size-8 items-center justify-center rounded-lg text-xs font-semibold transition ${page === pagination.current ? 'bg-[#00407f] text-white' : 'text-[#727783] hover:bg-white'}`}
                                     >
                                         {page}
@@ -275,46 +356,20 @@ export default function PackagesIndex({ stats, packages, pagination, helpers, fl
                                 {pagination.last_page > 4 && <span className="px-2 text-base leading-6 text-[#727783]">...</span>}
                                 {pagination.last_page > 3 && (
                                     <Link
-                                        href={route('admin.packages.index', { page: pagination.last_page })}
+                                        href={route('admin.packages.index', pageQuery(pagination.last_page))}
                                         className={`inline-flex size-8 items-center justify-center rounded-lg text-xs font-semibold transition ${pagination.last_page === pagination.current ? 'bg-[#00407f] text-white' : 'text-[#727783] hover:bg-white'}`}
                                     >
                                         {pagination.last_page}
                                     </Link>
                                 )}
                                 <Link
-                                    href={pagination.current < pagination.last_page ? route('admin.packages.index', { page: pagination.current + 1 }) : '#'}
+                                    href={pagination.current < pagination.last_page ? route('admin.packages.index', pageQuery(pagination.current + 1)) : '#'}
                                     className={`inline-flex size-8 items-center justify-center rounded-lg text-[#727783] transition ${pagination.current >= pagination.last_page ? 'pointer-events-none opacity-40' : 'hover:bg-white'}`}
                                 >
                                     <svg className="h-3 w-2" viewBox="0 0 8 12" fill="none"><path d="M1.5 1L6.5 6L1.5 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                 </Link>
                             </nav>
                         </div>
-                    </section>
-
-                    {/* Helper Cards */}
-                    <section className="grid gap-8 lg:grid-cols-2">
-                        <article className="relative min-h-[204px] overflow-hidden rounded-2xl p-8 text-white">
-                            <img src={`/${helpers.bulk_upload.image}`} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#7f0f00]/90 to-[#00407f]/0"></div>
-                            <div className="relative flex max-w-md flex-col items-start gap-3">
-                                <h2 className="text-xl font-bold leading-7" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{helpers.bulk_upload.title}</h2>
-                                <p className="text-sm font-normal leading-5 text-white/90">{helpers.bulk_upload.description}</p>
-                                <a href="#" className="mt-1 inline-flex rounded-lg bg-white px-4 py-2 text-xs font-semibold text-[#7f0800] transition hover:bg-[#fff7f5]">
-                                    {helpers.bulk_upload.button}
-                                </a>
-                            </div>
-                        </article>
-
-                        <article className="flex min-h-[204px] flex-col justify-center rounded-2xl bg-[#ffdbc8] p-8 text-[#311300]">
-                            <span className="inline-flex size-10 items-center justify-center rounded-full bg-[#fd811d] text-white">
-                                <svg className="h-5 w-[15px]" viewBox="0 0 18 24" fill="none">
-                                    <path d="M9 2a7 7 0 0 0-4 12.75V18h8v-3.25A7 7 0 0 0 9 2Z" fill="currentColor" />
-                                    <path d="M6.5 21h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                </svg>
-                            </span>
-                            <h2 className="mt-5 text-xl font-bold leading-7" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{helpers.tip.title}</h2>
-                            <p className="mt-3 max-w-md text-sm font-normal leading-5 text-[#311300]/80">{helpers.tip.description}</p>
-                        </article>
                     </section>
                 </div>
             </main>
