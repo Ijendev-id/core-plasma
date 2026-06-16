@@ -4,6 +4,7 @@ use App\Http\Controllers\AcademyPortalController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\MemberAuthController;
+use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\PackageInventoryController;
 use App\Http\Controllers\TryoutQuestionController;
 use App\Http\Controllers\TryoutSectionController;
@@ -69,6 +70,10 @@ Route::middleware('auth:member')->group(function (): void {
     Route::get('/tryouts', [AcademyPortalController::class, 'tryouts'])->name('tryouts.index');
     Route::get('/leaderboard', [AcademyPortalController::class, 'leaderboard'])->name('leaderboard');
     Route::get('/tryouts/{package}/play', [AcademyPortalController::class, 'play'])->name('tryouts.play');
+    Route::post('/tryouts/{package}/submit', [AcademyPortalController::class, 'submit'])->name('tryouts.submit');
+    Route::get('/tryouts/{package}/result/{attempt}', [AcademyPortalController::class, 'result'])->name('tryouts.result');
+    Route::get('/profile', [MemberProfileController::class, 'edit'])->name('member.profile.edit');
+    Route::post('/profile', [MemberProfileController::class, 'update'])->name('member.profile.update');
 });
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
@@ -89,6 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::delete('/admin/packages/{package}', [PackageInventoryController::class, 'destroy'])->name('admin.packages.destroy');
     Route::get('/admin/packages/{package}/tryout', [AdminDashboardController::class, 'tryoutDetail'])->name('admin.packages.tryout');
     Route::post('/admin/packages/{package}/questions', [TryoutQuestionController::class, 'store'])->name('admin.packages.questions.store');
+    Route::put('/admin/packages/{package}/questions-reorder', [TryoutQuestionController::class, 'reorder'])->name('admin.packages.questions.reorder');
     Route::put('/admin/packages/{package}/questions/{question}', [TryoutQuestionController::class, 'update'])->name('admin.packages.questions.update');
     Route::delete('/admin/packages/{package}/questions/{question}', [TryoutQuestionController::class, 'destroy'])->name('admin.packages.questions.destroy');
     Route::get('/admin/taxonomy', [TryoutTaxonomyController::class, 'index'])->name('admin.taxonomy.index');

@@ -67,7 +67,6 @@ class AdminDashboardController extends Controller
                     'name' => $section->name,
                 ])
                 ->all(),
-            'questionTarget' => (int) $package->question_count,
         ]);
     }
 

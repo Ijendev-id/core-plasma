@@ -7,6 +7,7 @@ use App\Models\LearningPackage;
 use App\Models\TryoutQuestion;
 use App\Services\TryoutQuestionService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class TryoutQuestionController extends Controller
 {
@@ -36,5 +37,18 @@ class TryoutQuestionController extends Controller
 
         return to_route('admin.packages.tryout', $package)
             ->with('status', 'Soal berhasil dihapus.');
+    }
+
+    public function reorder(Request $request, LearningPackage $package): RedirectResponse
+    {
+        $validated = $request->validate([
+            'order' => ['required', 'array'],
+            'order.*' => ['integer'],
+        ]);
+
+        $this->service->reorderQuestions($package, $validated['order']);
+
+        return to_route('admin.packages.tryout', $package)
+            ->with('status', 'Urutan soal diperbarui.');
     }
 }
