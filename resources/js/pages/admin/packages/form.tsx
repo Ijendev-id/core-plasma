@@ -4,10 +4,10 @@ import { type FormEvent } from 'react';
 interface PackageFormData {
     name: string;
     category: string;
-    question_count: number;
-    duration_minutes: number;
-    participants_count: number;
-    price: number;
+    duration_minutes: number | '';
+    participants_count: number | '';
+    price: number | '';
+    leaderboard_price: number | '';
     status: string;
     icon: string;
     tone: string;
@@ -29,10 +29,10 @@ export default function PackageForm({ title, action, method, package: pkg, categ
     const { data, setData, post, put, processing, errors } = useForm<PackageFormData>({
         name: pkg.name,
         category: pkg.category,
-        question_count: pkg.question_count,
         duration_minutes: pkg.duration_minutes,
         participants_count: pkg.participants_count,
         price: pkg.price,
+        leaderboard_price: pkg.leaderboard_price,
         status: pkg.status,
         icon: pkg.icon,
         tone: pkg.tone,
@@ -125,21 +125,6 @@ export default function PackageForm({ title, action, method, package: pkg, categ
                                 {errors.status && <p className="mt-2 text-sm font-semibold text-[#a80606]">{errors.status}</p>}
                             </div>
 
-                            {/* Questions */}
-                            <div>
-                                <label htmlFor="question_count" className="text-xs font-semibold uppercase tracking-[0.8px] text-[#727783]">Questions</label>
-                                <input
-                                    id="question_count"
-                                    type="text"
-                                    inputMode="numeric"
-                                    value={data.question_count}
-                                    onChange={(e) => setData('question_count', Number(e.target.value.replace(/\D/g, '')) || 0)}
-                                    required
-                                    className="mt-2 h-12 w-full rounded-xl border border-[#e0dddd] bg-[#f8f7f7] px-4 text-sm font-semibold text-[#1b1c1c] outline-none transition focus:border-[#00407f] focus:bg-white focus:ring-2 focus:ring-[#00407f]/10"
-                                />
-                                {errors.question_count && <p className="mt-2 text-sm font-semibold text-[#a80606]">{errors.question_count}</p>}
-                            </div>
-
                             {/* Duration */}
                             <div>
                                 <label htmlFor="duration_minutes" className="text-xs font-semibold uppercase tracking-[0.8px] text-[#727783]">Durasi (menit)</label>
@@ -148,26 +133,26 @@ export default function PackageForm({ title, action, method, package: pkg, categ
                                     type="text"
                                     inputMode="numeric"
                                     value={data.duration_minutes}
-                                    onChange={(e) => setData('duration_minutes', Number(e.target.value.replace(/\D/g, '')) || 0)}
-                                    required
+                                    onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setData('duration_minutes', v === '' ? '' : Number(v)); }}
                                     placeholder="mis. 90"
                                     className="mt-2 h-12 w-full rounded-xl border border-[#e0dddd] bg-[#f8f7f7] px-4 text-sm font-semibold text-[#1b1c1c] outline-none transition focus:border-[#00407f] focus:bg-white focus:ring-2 focus:ring-[#00407f]/10"
                                 />
                                 {errors.duration_minutes && <p className="mt-2 text-sm font-semibold text-[#a80606]">{errors.duration_minutes}</p>}
                             </div>
 
-                            {/* Participants */}
+                            {/* Limit Peserta (kuota) */}
                             <div>
-                                <label htmlFor="participants_count" className="text-xs font-semibold uppercase tracking-[0.8px] text-[#727783]">Participants</label>
+                                <label htmlFor="participants_count" className="text-xs font-semibold uppercase tracking-[0.8px] text-[#727783]">Limit Peserta</label>
                                 <input
                                     id="participants_count"
                                     type="text"
                                     inputMode="numeric"
                                     value={data.participants_count}
-                                    onChange={(e) => setData('participants_count', Number(e.target.value.replace(/\D/g, '')) || 0)}
-                                    required
+                                    onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setData('participants_count', v === '' ? '' : Number(v)); }}
+                                    placeholder="999 = tidak terbatas"
                                     className="mt-2 h-12 w-full rounded-xl border border-[#e0dddd] bg-[#f8f7f7] px-4 text-sm font-semibold text-[#1b1c1c] outline-none transition focus:border-[#00407f] focus:bg-white focus:ring-2 focus:ring-[#00407f]/10"
                                 />
+                                <p className="mt-2 text-xs font-medium text-[#727783]">Kuota maksimal peserta yang boleh mendaftar. Isi <span className="font-bold">999</span> untuk tidak terbatas.</p>
                                 {errors.participants_count && <p className="mt-2 text-sm font-semibold text-[#a80606]">{errors.participants_count}</p>}
                             </div>
 
@@ -179,11 +164,26 @@ export default function PackageForm({ title, action, method, package: pkg, categ
                                     type="text"
                                     inputMode="numeric"
                                     value={data.price}
-                                    onChange={(e) => setData('price', Number(e.target.value.replace(/\D/g, '')) || 0)}
-                                    required
+                                    onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setData('price', v === '' ? '' : Number(v)); }}
                                     className="mt-2 h-12 w-full rounded-xl border border-[#e0dddd] bg-[#f8f7f7] px-4 text-sm font-semibold text-[#1b1c1c] outline-none transition focus:border-[#00407f] focus:bg-white focus:ring-2 focus:ring-[#00407f]/10"
                                 />
                                 {errors.price && <p className="mt-2 text-sm font-semibold text-[#a80606]">{errors.price}</p>}
+                            </div>
+
+                            {/* Leaderboard Price */}
+                            <div>
+                                <label htmlFor="leaderboard_price" className="text-xs font-semibold uppercase tracking-[0.8px] text-[#727783]">Harga Buka Leaderboard</label>
+                                <input
+                                    id="leaderboard_price"
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={data.leaderboard_price}
+                                    onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setData('leaderboard_price', v === '' ? '' : Number(v)); }}
+                                    placeholder="0 = leaderboard gratis/langsung terlihat"
+                                    className="mt-2 h-12 w-full rounded-xl border border-[#e0dddd] bg-[#f8f7f7] px-4 text-sm font-semibold text-[#1b1c1c] outline-none transition focus:border-[#00407f] focus:bg-white focus:ring-2 focus:ring-[#00407f]/10"
+                                />
+                                <p className="mt-2 text-xs font-medium text-[#727783]">Harga untuk membuka leaderboard tryout ini. Isi <span className="font-bold">0</span> agar leaderboard langsung terlihat gratis.</p>
+                                {errors.leaderboard_price && <p className="mt-2 text-sm font-semibold text-[#a80606]">{errors.leaderboard_price}</p>}
                             </div>
 
                             {/* Icon */}

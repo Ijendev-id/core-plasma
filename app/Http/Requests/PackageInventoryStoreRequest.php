@@ -17,10 +17,10 @@ class PackageInventoryStoreRequest extends FormRequest
     {
         $this->merge([
             'category' => Str::upper((string) $this->input('category')),
-            'question_count' => $this->numericInput('question_count'),
             'duration_minutes' => $this->numericInput('duration_minutes'),
             'participants_count' => $this->numericInput('participants_count'),
             'price' => $this->numericInput('price'),
+            'leaderboard_price' => $this->numericInput('leaderboard_price'),
             'show_participant_preview' => $this->boolean('show_participant_preview'),
         ]);
     }
@@ -33,10 +33,10 @@ class PackageInventoryStoreRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:120'],
             'category' => ['required', 'string', 'max:60'],
-            'question_count' => ['required', 'integer', 'min:0', 'max:100000'],
             'duration_minutes' => ['required', 'integer', 'min:0', 'max:100000'],
             'participants_count' => ['required', 'integer', 'min:0', 'max:10000000'],
             'price' => ['required', 'integer', 'min:0', 'max:1000000000'],
+            'leaderboard_price' => ['required', 'integer', 'min:0', 'max:1000000000'],
             'status' => ['required', Rule::in(['published', 'draft'])],
             'icon' => ['required', Rule::in(['graduation', 'rocket', 'briefcase', 'school'])],
             'tone' => ['required', Rule::in(['blue', 'amber', 'muted'])],
@@ -44,8 +44,15 @@ class PackageInventoryStoreRequest extends FormRequest
         ];
     }
 
-    private function numericInput(string $key): int
+    private function numericInput(string $key): int|string|null
     {
-        return (int) preg_replace('/\D+/', '', (string) $this->input($key, 0));
+        $raw = $this->input($key);
+
+        // Biarkan kosong tetap kosong supaya gagal validasi 'required' (bukan dipaksa jadi 0).
+        if ($raw === null || $raw === '') {
+            return $raw;
+        }
+
+        return (int) preg_replace('/\D+/', '', (string) $raw);
     }
 }

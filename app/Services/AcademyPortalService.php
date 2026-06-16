@@ -48,6 +48,7 @@ class AcademyPortalService
                 ->map(fn (TryoutAttempt $attempt): array => [
                     'package_name' => $attempt->learningPackage?->name ?? 'Tryout',
                     'package_slug' => $attempt->learningPackage?->slug ?? '#',
+                    'category' => $attempt->learningPackage?->category ?? '-',
                     'score' => $attempt->score,
                     'twk' => $attempt->twk_score,
                     'tiu' => $attempt->tiu_score,
@@ -67,11 +68,11 @@ class AcademyPortalService
 
         return [
             'myTryouts' => $myTryouts,
+            'myCategories' => collect($myTryouts)->pluck('category')->unique()->values()->all(),
             'packages' => LearningPackage::query()
                 ->withCount('questions')
                 ->where('status', 'published')
                 ->orderBy('id')
-                ->take(6)
                 ->get()
                 ->map(fn (LearningPackage $package): array => [
                     'name' => $package->name,
@@ -96,25 +97,26 @@ class AcademyPortalService
         $packages = LearningPackage::query()
             ->where('status', 'published')
             ->orderBy('id')
-            ->get(['id', 'name', 'slug', 'price']);
+            ->get(['id', 'name', 'slug', 'leaderboard_price']);
 
         $selected = $packageSlug
             ? $packages->firstWhere('slug', $packageSlug) ?? $packages->first()
             : $packages->first();
 
         $attempts = $selected ? $this->topAttempts(12, $selected->id) : collect();
-        $isLocked = $selected && $selected->price > 0;
+        // Leaderboard terkunci hanya jika ada harga buka (> 0). leaderboard_price = 0 → langsung terlihat.
+        $isLocked = $selected && (int) $selected->leaderboard_price > 0;
 
         return [
             'packages' => $packages->map(fn (LearningPackage $p): array => [
                 'name' => $p->name,
                 'slug' => $p->slug,
-                'price' => $p->price,
+                'price' => $p->leaderboard_price,
             ])->all(),
             'selectedPackage' => $selected ? [
                 'name' => $selected->name,
                 'slug' => $selected->slug,
-                'price' => $selected->price,
+                'price' => $selected->leaderboard_price,
             ] : null,
             'isLocked' => $isLocked,
             'podium' => $attempts
@@ -144,25 +146,160 @@ class AcademyPortalService
     /**
      * @return array<string, mixed>
      */
+    /**
+     * Pastikan member terdaftar pada tryout, dengan menegakkan limit kuota.
+     * Mengembalikan true jika boleh lanjut, false jika kuota penuh.
+     */
+    public function ensureEnrolled(LearningPackage $package): bool
+    {
+        $member = $this->currentMember();
+
+        if (! $member) {
+            // Tanpa member terautentikasi tidak ada enrollment yang dibuat; biarkan lanjut (mis. preview).
+            return true;
+        }
+
+        $alreadyEnrolled = PackageEnrollment::query()
+            ->where('member_id', $member->id)
+            ->where('learning_package_id', $package->id)
+            ->exists();
+
+        if ($alreadyEnrolled) {
+            return true;
+        }
+
+        if (! $package->hasAvailableSlot()) {
+            return false;
+        }
+
+        PackageEnrollment::query()->create([
+            'member_id' => $member->id,
+            'learning_package_id' => $package->id,
+            'status' => 'active',
+            'progress_percent' => 0,
+            'enrolled_at' => now(),
+        ]);
+
+        return true;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function play(?LearningPackage $package = null): array
     {
         $package ??= LearningPackage::query()->where('status', 'published')->orderBy('id')->first();
+
         $questions = $package
             ? $package->questions()->with('answers')->where('is_active', true)->orderBy('order_number')->get()
             : collect();
-        $question = $questions->skip(3)->first() ?? $questions->first();
-        $questionIndex = $question
-            ? $questions->values()->search(fn (TryoutQuestion $item): bool => $item->id === $question->id)
-            : false;
-        $currentNumber = $questionIndex === false ? 1 : $questionIndex + 1;
-        $totalQuestions = $questions->isNotEmpty()
-            ? $questions->count()
-            : max($package?->question_count ?? 1, 1);
 
         return [
-            'package' => $package,
-            'question' => $this->formatPlayableQuestion($question, $currentNumber, $totalQuestions),
-            'palette' => $this->questionPalette($totalQuestions, $currentNumber),
+            'package' => $package ? [
+                'name' => $package->name,
+                'slug' => $package->slug,
+                'category' => $package->category,
+                'duration_minutes' => $package->duration_minutes,
+            ] : null,
+            // Soal dikirim TANPA flag is_correct supaya kunci jawaban tidak bocor ke klien.
+            'questions' => $questions->values()->map(fn (TryoutQuestion $q, int $i): array => [
+                'id' => $q->id,
+                'number' => $i + 1,
+                'section' => $q->section,
+                'text' => $q->prompt,
+                'image' => $q->attachment_path ?: null,
+                'answers' => $q->answers->map(fn ($a): array => [
+                    'label' => $a->label,
+                    'text' => $a->answer_text,
+                ])->values()->all(),
+            ])->all(),
+        ];
+    }
+
+    /**
+     * Hitung skor dari jawaban member, simpan sebagai TryoutAttempt.
+     *
+     * @param  array<int, string>  $answers  pemetaan question_id => label (A-E)
+     * @return array<string, mixed>
+     */
+    public function submitTryout(LearningPackage $package, array $answers, int $durationSeconds = 0): TryoutAttempt
+    {
+        $member = $this->currentMember();
+        abort_unless($member !== null, 403, 'Harus login sebagai member.');
+
+        $questions = $package->questions()
+            ->with('answers')
+            ->where('is_active', true)
+            ->orderBy('order_number')
+            ->get();
+
+        $sectionScore = ['TWK' => 0, 'TIU' => 0, 'TKP' => 0];
+        $correctCount = 0;
+        $answeredCount = 0;
+        $totalScore = 0;
+
+        foreach ($questions as $question) {
+            $chosen = $answers[$question->id] ?? null;
+
+            if ($chosen !== null) {
+                $answeredCount++;
+            }
+
+            $correctLabel = $question->answers->firstWhere('is_correct', true)?->label;
+
+            if ($chosen !== null && $correctLabel !== null && $chosen === $correctLabel) {
+                $correctCount++;
+                $points = (int) $question->points;
+                $totalScore += $points;
+
+                if (array_key_exists($question->section, $sectionScore)) {
+                    $sectionScore[$question->section] += $points;
+                }
+            }
+        }
+
+        $passed = $questions->isNotEmpty() && $correctCount >= (int) ceil($questions->count() * 0.6);
+
+        return TryoutAttempt::query()->create([
+            'member_id' => $member->id,
+            'learning_package_id' => $package->id,
+            'score' => $totalScore,
+            'twk_score' => $sectionScore['TWK'],
+            'tiu_score' => $sectionScore['TIU'],
+            'tkp_score' => $sectionScore['TKP'],
+            'answered_count' => $answeredCount,
+            'correct_count' => $correctCount,
+            'duration_seconds' => max(0, $durationSeconds),
+            'status' => $passed ? 'certified' : 'failed',
+            'started_at' => now()->subSeconds(max(0, $durationSeconds)),
+            'finished_at' => now(),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function attemptResult(LearningPackage $package, TryoutAttempt $attempt): array
+    {
+        $totalQuestions = $package->questions()->where('is_active', true)->count();
+
+        return [
+            'package' => [
+                'name' => $package->name,
+                'slug' => $package->slug,
+                'category' => $package->category,
+            ],
+            'result' => [
+                'score' => $attempt->score,
+                'twk' => $attempt->twk_score,
+                'tiu' => $attempt->tiu_score,
+                'tkp' => $attempt->tkp_score,
+                'correct' => $attempt->correct_count,
+                'answered' => $attempt->answered_count,
+                'total' => $totalQuestions,
+                'status' => $this->attemptStatus($attempt->status),
+                'duration' => $this->formatDuration($attempt->duration_seconds),
+            ],
         ];
     }
 
@@ -357,34 +494,33 @@ class AcademyPortalService
      */
     private function memberProgress(?Member $member): array
     {
-        $progress = $member
-            ? PackageEnrollment::query()
-                ->with('learningPackage')
-                ->where('member_id', $member->id)
-                ->latest('enrolled_at')
-                ->take(2)
-                ->get()
-                ->map(fn (PackageEnrollment $enrollment): array => [
-                    'title' => $enrollment->learningPackage?->name ?? 'Tryout',
-                    'percent' => $enrollment->progress_percent,
-                    'tag' => $enrollment->learningPackage?->category ?? 'TRYOUT',
-                ])
-            : collect();
-
-        if ($progress->isEmpty()) {
-            $progress = LearningPackage::query()
-                ->where('status', 'published')
-                ->orderBy('id')
-                ->take(2)
-                ->get()
-                ->map(fn (LearningPackage $package): array => [
-                    'title' => $package->name,
-                    'percent' => 0,
-                    'tag' => $package->category,
-                ]);
+        if (! $member) {
+            return [];
         }
 
-        return $progress->values()->all();
+        // Tryout "sedang berlangsung" = sudah didaftarkan tapi belum punya attempt yang selesai.
+        $finishedPackageIds = TryoutAttempt::query()
+            ->where('member_id', $member->id)
+            ->whereNotNull('finished_at')
+            ->pluck('learning_package_id')
+            ->unique()
+            ->all();
+
+        return PackageEnrollment::query()
+            ->with('learningPackage')
+            ->where('member_id', $member->id)
+            ->whereNotIn('learning_package_id', $finishedPackageIds)
+            ->latest('enrolled_at')
+            ->take(4)
+            ->get()
+            ->map(fn (PackageEnrollment $enrollment): array => [
+                'title' => $enrollment->learningPackage?->name ?? 'Tryout',
+                'slug' => $enrollment->learningPackage?->slug ?? '#',
+                'percent' => $enrollment->progress_percent,
+                'tag' => $enrollment->learningPackage?->category ?? 'TRYOUT',
+            ])
+            ->values()
+            ->all();
     }
 
     /**

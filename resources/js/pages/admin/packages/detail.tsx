@@ -38,7 +38,6 @@ interface Props {
     package: PackageInfo;
     questions: Question[];
     sections: Section[];
-    questionTarget: number;
     flash?: { status?: string };
 }
 
@@ -52,23 +51,24 @@ function emptyForm(defaultSection: string) {
         attachment_path: '',
         points: 1,
         is_active: true,
+        position: 0,
         answers: { A: '', B: '', C: '', D: '', E: '' } as Record<string, string>,
     };
 }
 
-export default function PackageDetail({ package: pkg, questions, sections, questionTarget, flash }: Props) {
+export default function PackageDetail({ package: pkg, questions, sections, flash }: Props) {
     const defaultSection = sections[0]?.code ?? '';
 
     // null = mode "tambah soal baru"; number = id soal yang sedang diedit
     const [activeId, setActiveId] = useState<number | null>(questions[0]?.id ?? null);
+    // posisi (1-based) tempat soal baru akan disisipkan; default = akhir
+    const [newPosition, setNewPosition] = useState<number>(questions.length + 1);
+    const [dragIndex, setDragIndex] = useState<number | null>(null);
 
     const activeQuestion = useMemo(
         () => questions.find((q) => q.id === activeId) ?? null,
         [questions, activeId],
     );
-
-    // Berapa slot nomor yang ditampilkan: target jumlah soal vs soal yang sudah ada.
-    const slotCount = Math.max(questionTarget, questions.length);
 
     const { data, setData, post, put, processing, errors, reset } = useForm(emptyForm(defaultSection));
 
@@ -81,6 +81,7 @@ export default function PackageDetail({ package: pkg, questions, sections, quest
                 attachment_path: activeQuestion.attachment_path ?? '',
                 points: activeQuestion.points,
                 is_active: activeQuestion.is_active,
+                position: 0,
                 answers: { A: '', B: '', C: '', D: '', E: '', ...activeQuestion.answers },
             });
         } else {
@@ -98,6 +99,7 @@ export default function PackageDetail({ package: pkg, questions, sections, quest
         if (isEditing && activeQuestion) {
             put(route('admin.packages.questions.update', [pkg.slug, activeQuestion.id]), { preserveScroll: true });
         } else {
+            setData('position', newPosition);
             post(route('admin.packages.questions.store', pkg.slug), {
                 preserveScroll: true,
                 onSuccess: () => { reset(); setData(emptyForm(defaultSection)); },
@@ -113,6 +115,27 @@ export default function PackageDetail({ package: pkg, questions, sections, quest
         });
     }
 
+    // Mulai tambah soal di posisi tertentu (1-based).
+    function startAddAt(position: number) {
+        setNewPosition(position);
+        setActiveId(null);
+    }
+
+    // Drag-drop: jatuhkan soal yang sedang di-drag ke slot index target.
+    function handleDrop(targetIndex: number) {
+        if (dragIndex === null || dragIndex === targetIndex) {
+            setDragIndex(null);
+            return;
+        }
+        const ids = questions.map((q) => q.id);
+        const [moved] = ids.splice(dragIndex, 1);
+        ids.splice(targetIndex, 0, moved);
+        setDragIndex(null);
+        router.put(route('admin.packages.questions.reorder', pkg.slug), { order: ids }, {
+            preserveScroll: true,
+        });
+    }
+
     return (
         <AdminLayout>
             <Head title={`Edit Soal - ${pkg.name}`} />
@@ -124,7 +147,7 @@ export default function PackageDetail({ package: pkg, questions, sections, quest
                             <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">{pkg.category}</p>
                             <h1 className="mt-2 text-3xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Edit Soal — {pkg.name}</h1>
                             <p className="mt-2 text-sm font-medium text-[#727783]">
-                                {questions.length} dari {slotCount} soal terisi · status <span className="capitalize">{pkg.status}</span>
+                                {questions.length} soal · status <span className="capitalize">{pkg.status}</span>
                             </p>
                         </div>
                         <Link href={route('admin.packages.edit', pkg.slug)} className="rounded-xl bg-[#a80606] px-5 py-3 text-sm font-bold text-white">
@@ -141,27 +164,32 @@ export default function PackageDetail({ package: pkg, questions, sections, quest
                     {/* Palette nomor soal */}
                     <aside className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
                         <h2 className="text-sm font-bold uppercase tracking-[1px] text-[#727783]">Nomor Soal</h2>
+                        <p className="mt-1 text-[11px] font-medium text-[#727783]">Klik untuk edit · seret untuk ubah urutan.</p>
                         <div className="mt-4 grid grid-cols-5 gap-2">
-                            {Array.from({ length: slotCount }, (_, i) => {
-                                const q = questions[i];
-                                const filled = Boolean(q);
-                                const active = filled ? activeId === q.id : false;
+                            {questions.map((q, i) => {
+                                const active = activeId === q.id;
+                                const dragging = dragIndex === i;
                                 return (
                                     <button
-                                        key={i}
+                                        key={q.id}
                                         type="button"
-                                        onClick={() => (filled ? setActiveId(q.id) : setActiveId(null))}
-                                        title={filled ? q.section : 'Slot kosong — klik untuk isi'}
-                                        className={`relative flex h-11 items-center justify-center rounded-lg text-sm font-bold transition ${
-                                            active
-                                                ? 'bg-[#00407f] text-white'
-                                                : filled
-                                                    ? 'bg-[#f6f3f2] text-[#1b1c1c] hover:bg-[#eae7e7]'
-                                                    : 'border-2 border-dashed border-[#d8d1cf] text-[#bcb6b4] hover:bg-[#f6f3f2]'
+                                        draggable
+                                        onDragStart={() => setDragIndex(i)}
+                                        onDragOver={(e) => e.preventDefault()}
+                                        onDrop={() => handleDrop(i)}
+                                        onDragEnd={() => setDragIndex(null)}
+                                        onClick={() => setActiveId(q.id)}
+                                        title={`${q.section} — seret untuk pindah`}
+                                        className={`relative flex h-11 cursor-grab items-center justify-center rounded-lg text-sm font-bold transition active:cursor-grabbing ${
+                                            dragging
+                                                ? 'opacity-40'
+                                                : active
+                                                    ? 'bg-[#00407f] text-white'
+                                                    : 'bg-[#f6f3f2] text-[#1b1c1c] hover:bg-[#eae7e7]'
                                         }`}
                                     >
                                         {i + 1}
-                                        {filled && !q.is_active && (
+                                        {!q.is_active && (
                                             <span className="absolute -right-1 -top-1 size-2.5 rounded-full border-2 border-white bg-[#984800]" />
                                         )}
                                     </button>
@@ -169,18 +197,19 @@ export default function PackageDetail({ package: pkg, questions, sections, quest
                             })}
                             <button
                                 type="button"
-                                onClick={() => setActiveId(null)}
+                                onClick={() => startAddAt(questions.length + 1)}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={() => handleDrop(questions.length)}
                                 className={`flex h-11 items-center justify-center rounded-lg text-lg font-bold transition ${
                                     activeId === null ? 'bg-[#004b19] text-white' : 'border-2 border-dashed border-[#d8d1cf] text-[#727783] hover:bg-[#f6f3f2]'
                                 }`}
-                                title="Tambah soal baru"
+                                title="Tambah soal baru di akhir"
                             >
                                 +
                             </button>
                         </div>
                         <div className="mt-4 flex flex-col gap-1 text-[11px] font-semibold text-[#727783]">
                             <span className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-[#00407f]" /> Dipilih</span>
-                            <span className="flex items-center gap-2"><span className="size-2.5 rounded border border-dashed border-[#d8d1cf]" /> Slot kosong</span>
                             <span className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-[#984800]" /> Draft (nonaktif)</span>
                         </div>
                     </aside>

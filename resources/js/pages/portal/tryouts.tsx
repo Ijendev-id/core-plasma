@@ -1,9 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import PortalLayout from '../../layouts/PortalLayout';
 
 interface MyTryout {
     package_name: string;
     package_slug: string;
+    category: string;
     score: number;
     twk: number;
     tiu: number;
@@ -25,10 +27,18 @@ interface Package {
 
 interface Props {
     myTryouts: MyTryout[];
+    myCategories: string[];
     packages: Package[];
 }
 
-export default function Tryouts({ myTryouts, packages }: Props) {
+export default function Tryouts({ myTryouts, myCategories, packages }: Props) {
+    const [category, setCategory] = useState('');
+
+    const filteredMyTryouts = useMemo(
+        () => (category ? myTryouts.filter((t) => t.category === category) : myTryouts),
+        [myTryouts, category],
+    );
+
     return (
         <PortalLayout>
             <Head title="Paket Try Out" />
@@ -47,19 +57,34 @@ export default function Tryouts({ myTryouts, packages }: Props) {
 
                 {/* Tryout Saya */}
                 <section className="mt-8">
-                    <h2 className="text-xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tryout Saya</h2>
-                    {myTryouts.length === 0 ? (
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h2 className="text-xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Tryout Saya</h2>
+                        {myCategories.length > 0 && (
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="h-10 rounded-xl border border-[#e5e0df] bg-white px-3 text-sm font-semibold uppercase outline-none focus:border-[#a80606]"
+                            >
+                                <option value="">Semua Kategori</option>
+                                {myCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        )}
+                    </div>
+                    {filteredMyTryouts.length === 0 ? (
                         <div className="mt-4 rounded-2xl bg-white p-8 text-center shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-                            <p className="text-sm font-semibold text-[#727783]">Kamu belum mengerjakan tryout apapun. Yuk mulai!</p>
+                            <p className="text-sm font-semibold text-[#727783]">
+                                {myTryouts.length === 0 ? 'Kamu belum mengerjakan tryout apapun. Yuk mulai!' : 'Tidak ada tryout pada kategori ini.'}
+                            </p>
                         </div>
                     ) : (
                         <div className="mt-4 space-y-4">
-                            {myTryouts.map((tryout, i) => (
+                            {filteredMyTryouts.map((tryout, i) => (
                                 <div key={i} className="rounded-2xl bg-white p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3">
                                                 <h3 className="text-base font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{tryout.package_name}</h3>
+                                                <span className="rounded-full bg-[#eef2f7] px-2 py-0.5 text-[10px] font-bold uppercase text-[#00407f]">{tryout.category}</span>
                                                 <span className="rounded-full bg-[#fff1d9] px-2 py-0.5 text-[10px] font-bold text-[#984800]">{tryout.status}</span>
                                             </div>
                                             <p className="mt-1 text-xs text-[#727783]">{tryout.date} · {tryout.duration}</p>

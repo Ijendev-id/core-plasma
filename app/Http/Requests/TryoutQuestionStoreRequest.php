@@ -24,6 +24,7 @@ class TryoutQuestionStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'position' => ['nullable', 'integer', 'min:1'],
             'section' => ['required', Rule::in(TryoutSection::query()->pluck('code')->all())],
             'prompt' => ['required', 'string', 'min:12'],
             'attachment_path' => ['nullable', 'string', 'max:255'],
