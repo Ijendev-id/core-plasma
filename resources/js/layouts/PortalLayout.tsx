@@ -49,6 +49,12 @@ export default function PortalLayout({ children }: Props) {
                     >
                         Leaderboard
                     </Link>
+                    <Link
+                        href={route('member.profile.edit')}
+                        className={`rounded-lg px-3 py-2 ${route().current('member.profile.*') ? 'bg-[#fff1f1] text-[#d40f22]' : 'hover:bg-[#f6f3f2]'}`}
+                    >
+                        Profil
+                    </Link>
                 </nav>
                 <form onSubmit={handleLogout} className="mt-auto">
                     <button className="w-full rounded-lg bg-[#a80606] px-3 py-3 text-center text-xs font-bold text-white shadow-[0_10px_20px_rgba(168,6,6,0.2)]">
@@ -136,7 +142,7 @@ export default function PortalLayout({ children }: Props) {
                     {member && (
                         <span className="hidden text-xs font-semibold text-[#727783] sm:inline">{member.name}</span>
                     )}
-                    <div className="size-8 rounded-full bg-[#00407f]"></div>
+                    <Link href={route('member.profile.edit')} className="size-8 rounded-full bg-[#00407f]" aria-label="Profil" />
                 </div>
             </header>
 

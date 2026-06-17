@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\LearningPackage;
 use App\Models\Member;
+use App\Models\TryoutSection;
 use App\Services\AcademyPortalService;
-use App\Services\PackageInventoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,7 +15,6 @@ class AdminDashboardController extends Controller
 {
     public function __construct(
         private readonly AcademyPortalService $portalService,
-        private readonly PackageInventoryService $packageService,
     ) {}
 
     public function dashboard(): Response
@@ -56,9 +55,18 @@ class AdminDashboardController extends Controller
     public function tryoutDetail(LearningPackage $package): Response
     {
         return Inertia::render('admin/packages/detail', [
-            ...$this->packageService->getPackageFormPage($package),
             'package' => $package,
             'questions' => $this->portalService->packageQuestions($package),
+            'sections' => TryoutSection::query()
+                ->whereHas('category', fn ($query) => $query->where('name', $package->category))
+                ->orderBy('code')
+                ->get(['id', 'code', 'name'])
+                ->map(fn (TryoutSection $section): array => [
+                    'id' => $section->id,
+                    'code' => $section->code,
+                    'name' => $section->name,
+                ])
+                ->all(),
         ]);
     }
 

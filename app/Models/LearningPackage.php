@@ -14,8 +14,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'slug',
     'category',
     'question_count',
+    'duration_minutes',
     'participants_count',
     'price',
+    'leaderboard_price',
     'status',
     'icon',
     'tone',
@@ -27,9 +29,42 @@ class LearningPackage extends Model
     /** @use HasFactory<LearningPackageFactory> */
     use HasFactory;
 
+    /**
+     * Nilai kuota peserta yang berarti "tidak terbatas".
+     */
+    public const UNLIMITED_QUOTA = 999;
+
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    /**
+     * Apakah kuota peserta tryout ini tidak terbatas.
+     */
+    public function hasUnlimitedQuota(): bool
+    {
+        return (int) $this->participants_count === self::UNLIMITED_QUOTA;
+    }
+
+    /**
+     * Jumlah peserta yang sudah terdaftar (enrolled).
+     */
+    public function enrolledCount(): int
+    {
+        return $this->members()->count();
+    }
+
+    /**
+     * Apakah tryout masih menerima pendaftaran (ada slot tersisa).
+     */
+    public function hasAvailableSlot(): bool
+    {
+        if ($this->hasUnlimitedQuota()) {
+            return true;
+        }
+
+        return $this->enrolledCount() < (int) $this->participants_count;
     }
 
     /**
@@ -67,8 +102,10 @@ class LearningPackage extends Model
     {
         return [
             'question_count' => 'integer',
+            'duration_minutes' => 'integer',
             'participants_count' => 'integer',
             'price' => 'integer',
+            'leaderboard_price' => 'integer',
             'show_participant_preview' => 'boolean',
             'published_at' => 'datetime',
         ];
