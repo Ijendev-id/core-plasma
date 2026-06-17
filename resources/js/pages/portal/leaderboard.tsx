@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import PortalLayout from '../../layouts/PortalLayout';
 
 interface PodiumPerson {
@@ -29,11 +29,35 @@ function rankLabel(rank: number): string {
 }
 
 export default function Leaderboard({ podium, rows }: Props) {
+    const isLocked = true;
+
     return (
         <PortalLayout>
             <Head title="Leaderboard" />
-            <section className="max-w-5xl">
-                <div className="rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+            <section className="relative max-w-5xl">
+                {isLocked ? (
+                    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/45 px-4">
+                        <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
+                            <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">Leaderboard Terkunci</p>
+                            <h2 className="mt-3 text-2xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                Buka leaderboard sekarang
+                            </h2>
+                            <p className="mt-3 text-sm leading-6 text-[#727783]">
+                                Akses hasil lengkap dan ranking peserta setelah membuka tampilan leaderboard.
+                            </p>
+                            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                                <Link
+                                    href={route('payment')}
+                                    className="inline-flex flex-1 items-center justify-center rounded-xl bg-[#d40f22] px-5 py-3 text-sm font-bold text-white"
+                                >
+                                    Buka leaderboard sekarang
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
+
+                <div className={`rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition duration-300 ${isLocked ? 'select-none blur-[6px]' : ''}`}>
                     <div className="text-center">
                         <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">Leaderboard</p>
                         <h1 className="mt-2 text-3xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Puncak Pretul</h1>
@@ -87,6 +111,21 @@ export default function Leaderboard({ podium, rows }: Props) {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    <div className="mt-8 rounded-2xl bg-[#f8f7f7] p-5">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">Payment</p>
+                                <h2 className="mt-1 text-lg font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    Lanjut ke halaman pembayaran
+                                </h2>
+                                <p className="mt-1 text-sm text-[#727783]">Pindah ke halaman payment untuk melihat QRIS.</p>
+                            </div>
+                            <Link href={route('payment')} className="inline-flex rounded-xl bg-[#a80606] px-5 py-3 text-sm font-bold text-white">
+                                Buka payment
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>

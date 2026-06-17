@@ -9,11 +9,6 @@
                 <h1 class="font-['Plus_Jakarta_Sans'] text-3xl font-extrabold">Try Out</h1>
                 <p class="mt-2 text-sm font-medium text-[#727783]">Latihan penalaran dengan bank soal yang sudah disiapkan.</p>
             </div>
-            <div class="hidden -space-x-2 md:flex">
-                <span class="size-8 rounded-full border-2 border-white bg-[#e2e8f0]"></span>
-                <span class="size-8 rounded-full border-2 border-white bg-[#ffd12e]"></span>
-                <span class="size-8 rounded-full border-2 border-white bg-[#d40f22]"></span>
-            </div>
         </div>
 
         {{-- SECTION: Tryout Saya --}}
@@ -92,11 +87,11 @@
             </div>
         </section>
 
-        <section class="mt-8 overflow-hidden rounded-3xl bg-gradient-to-r from-[#a80606] to-[#d31325] p-8 text-white shadow-[0_20px_50px_rgba(168,6,6,0.18)]">
+        {{-- <section class="mt-8 overflow-hidden rounded-3xl bg-gradient-to-r from-[#a80606] to-[#d31325] p-8 text-white shadow-[0_20px_50px_rgba(168,6,6,0.18)]">
             <h2 class="font-['Plus_Jakarta_Sans'] text-2xl font-bold">Butuh Konsultasi Strategi Belajar?</h2>
             <p class="mt-3 max-w-xl text-sm leading-6 text-white/80">Bingung mulai dari mana? Konsultasikan targetmu dan susun rencana belajar yang realistis.</p>
             <button class="mt-5 rounded-xl bg-[#ffd12e] px-5 py-3 text-sm font-bold text-[#311300]">Jadwalkan</button>
-        </section>
+        </section> --}}
 
         <section class="mt-8 grid gap-5 md:grid-cols-2">
             @foreach ($articles as $article)
