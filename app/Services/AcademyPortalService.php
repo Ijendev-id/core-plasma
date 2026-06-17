@@ -528,24 +528,27 @@ class AcademyPortalService
      */
     private function memberRecentResults(?Member $member): array
     {
-        $results = $member
-            ? TryoutAttempt::query()
-                ->with('learningPackage')
-                ->where('member_id', $member->id)
-                ->whereNotNull('finished_at')
-                ->latest('finished_at')
-                ->take(3)
-                ->get()
-            : collect();
-
-        if ($results->isEmpty()) {
-            $results = TryoutAttempt::query()
-                ->with('learningPackage')
-                ->whereNotNull('finished_at')
-                ->latest('finished_at')
-                ->take(3)
-                ->get();
+        if (! $member) {
+            return [];
         }
+
+        $selectedPackageIds = PackageEnrollment::query()
+            ->where('member_id', $member->id)
+            ->where('status', 'active')
+            ->pluck('learning_package_id');
+
+        if ($selectedPackageIds->isEmpty()) {
+            return [];
+        }
+
+        $results = TryoutAttempt::query()
+            ->with('learningPackage')
+            ->where('member_id', $member->id)
+            ->whereIn('learning_package_id', $selectedPackageIds)
+            ->whereNotNull('finished_at')
+            ->latest('finished_at')
+            ->take(3)
+            ->get();
 
         return $results
             ->map(fn (TryoutAttempt $attempt): array => [

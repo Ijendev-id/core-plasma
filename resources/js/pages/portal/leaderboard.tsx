@@ -37,43 +37,36 @@ function rankLabel(rank: number): string {
     return `${rank}TH`;
 }
 
-function LockIcon() {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto size-10 text-[#d40f22]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V7a4.5 4.5 0 10-9 0v3.5M5 10.5h14a1 1 0 011 1V20a1 1 0 01-1 1H5a1 1 0 01-1-1v-8.5a1 1 0 011-1z" />
-        </svg>
-    );
-}
-
-export default function Leaderboard({ packages, selectedPackage, isLocked, podium, rows }: Props) {
-    function handlePackageChange(e: React.ChangeEvent<HTMLSelectElement>) {
-        router.get(route('leaderboard'), { package: e.target.value }, { preserveState: false });
-    }
+export default function Leaderboard({ podium, rows }: Props) {
+    const isLocked = true;
 
     return (
         <PortalLayout>
             <Head title="Leaderboard" />
-            <section className="max-w-5xl">
-                {/* Package filter */}
-                {packages.length > 0 && (
-                    <div className="mb-6 flex justify-end">
-                        <div>
-                            <p className="mb-1 text-[10px] font-bold uppercase tracking-[1px] text-[#727783]">Pilih Tryout</p>
-                            <select
-                                value={selectedPackage?.slug ?? ''}
-                                onChange={handlePackageChange}
-                                className="rounded-xl border border-[#e8e5e5] bg-white px-4 py-2 text-sm font-semibold text-[#1a1a1a] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#d40f22]/30"
-                            >
-                                {packages.map((pkg) => (
-                                    <option key={pkg.slug} value={pkg.slug}>{pkg.name}</option>
-                                ))}
-                            </select>
+            <section className="relative max-w-5xl">
+                {isLocked ? (
+                    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/45 px-4">
+                        <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
+                            <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">Leaderboard Terkunci</p>
+                            <h2 className="mt-3 text-2xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                Buka leaderboard sekarang
+                            </h2>
+                            <p className="mt-3 text-sm leading-6 text-[#727783]">
+                                Akses hasil lengkap dan ranking peserta setelah membuka tampilan leaderboard.
+                            </p>
+                            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                                <Link
+                                    href={route('payment')}
+                                    className="inline-flex flex-1 items-center justify-center rounded-xl bg-[#d40f22] px-5 py-3 text-sm font-bold text-white"
+                                >
+                                    Buka leaderboard sekarang
+                                </Link>
+                            </div>
                         </div>
                     </div>
-                )}
+                ) : null}
 
-                <div className="relative rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-                    {/* Header */}
+                <div className={`rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition duration-300 ${isLocked ? 'select-none blur-[6px]' : ''}`}>
                     <div className="text-center">
                         <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">Leaderboard</p>
                         <h1 className="mt-2 text-3xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Puncak Pretul</h1>
