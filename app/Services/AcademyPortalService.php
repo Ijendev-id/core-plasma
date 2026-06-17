@@ -317,34 +317,24 @@ class AcademyPortalService
      */
     private function memberProgress(?Member $member): array
     {
-        $progress = $member
-            ? PackageEnrollment::query()
-                ->with('learningPackage')
-                ->where('member_id', $member->id)
-                ->latest('enrolled_at')
-                ->take(2)
-                ->get()
-                ->map(fn (PackageEnrollment $enrollment): array => [
-                    'title' => $enrollment->learningPackage?->name ?? 'Tryout',
-                    'percent' => $enrollment->progress_percent,
-                    'tag' => $enrollment->learningPackage?->category ?? 'TRYOUT',
-                ])
-            : collect();
-
-        if ($progress->isEmpty()) {
-            $progress = LearningPackage::query()
-                ->where('status', 'published')
-                ->orderBy('id')
-                ->take(2)
-                ->get()
-                ->map(fn (LearningPackage $package): array => [
-                    'title' => $package->name,
-                    'percent' => 0,
-                    'tag' => $package->category,
-                ]);
+        if (! $member) {
+            return [];
         }
 
-        return $progress->values()->all();
+        return PackageEnrollment::query()
+            ->with('learningPackage')
+            ->where('member_id', $member->id)
+            ->where('status', 'active')
+            ->latest('enrolled_at')
+            ->take(2)
+            ->get()
+            ->map(fn (PackageEnrollment $enrollment): array => [
+                'title' => $enrollment->learningPackage?->name ?? 'Tryout',
+                'percent' => $enrollment->progress_percent,
+                'tag' => $enrollment->learningPackage?->category ?? 'TRYOUT',
+            ])
+            ->values()
+            ->all();
     }
 
     /**
@@ -352,24 +342,27 @@ class AcademyPortalService
      */
     private function memberRecentResults(?Member $member): array
     {
-        $results = $member
-            ? TryoutAttempt::query()
-                ->with('learningPackage')
-                ->where('member_id', $member->id)
-                ->whereNotNull('finished_at')
-                ->latest('finished_at')
-                ->take(3)
-                ->get()
-            : collect();
-
-        if ($results->isEmpty()) {
-            $results = TryoutAttempt::query()
-                ->with('learningPackage')
-                ->whereNotNull('finished_at')
-                ->latest('finished_at')
-                ->take(3)
-                ->get();
+        if (! $member) {
+            return [];
         }
+
+        $selectedPackageIds = PackageEnrollment::query()
+            ->where('member_id', $member->id)
+            ->where('status', 'active')
+            ->pluck('learning_package_id');
+
+        if ($selectedPackageIds->isEmpty()) {
+            return [];
+        }
+
+        $results = TryoutAttempt::query()
+            ->with('learningPackage')
+            ->where('member_id', $member->id)
+            ->whereIn('learning_package_id', $selectedPackageIds)
+            ->whereNotNull('finished_at')
+            ->latest('finished_at')
+            ->take(3)
+            ->get();
 
         return $results
             ->map(fn (TryoutAttempt $attempt): array => [

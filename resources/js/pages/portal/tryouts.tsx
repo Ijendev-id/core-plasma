@@ -44,12 +44,7 @@ export default function Tryouts({ myTryouts, packages, articles }: Props) {
                         <h1 className="text-3xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Try Out</h1>
                         <p className="mt-2 text-sm font-medium text-[#727783]">Latihan penalaran dengan bank soal yang sudah disiapkan.</p>
                     </div>
-                    <div className="hidden -space-x-2 md:flex">
-                        <span className="size-8 rounded-full border-2 border-white bg-[#e2e8f0]"></span>
-                        <span className="size-8 rounded-full border-2 border-white bg-[#ffd12e]"></span>
-                        <span className="size-8 rounded-full border-2 border-white bg-[#d40f22]"></span>
                     </div>
-                </div>
 
                 {/* Tryout Saya */}
                 <section className="mt-8">
@@ -83,7 +78,7 @@ export default function Tryouts({ myTryouts, packages, articles }: Props) {
                                                 ))}
                                             </div>
                                         </div>
-                                        <Link href={route('tryouts.play', tryout.package_slug)} className="shrink-0 rounded-xl bg-[#a80606] px-4 py-2 text-xs font-bold text-white">
+                                                <Link href={route('tryouts.play', { package: tryout.package_slug })} className="shrink-0 rounded-xl bg-[#a80606] px-4 py-2 text-xs font-bold text-white">
                                             Ulangi
                                         </Link>
                                     </div>
@@ -115,7 +110,7 @@ export default function Tryouts({ myTryouts, packages, articles }: Props) {
                                     </div>
                                     <div className="mt-5 flex items-center justify-between">
                                         <span className="text-sm font-extrabold text-[#00407f]">{pkg.price}</span>
-                                        <Link href={route('tryouts.play', pkg.slug)} className="rounded-xl bg-[#a80606] px-4 py-2 text-xs font-bold text-white">
+                                        <Link href={route('tryouts.play', { package: pkg.slug })} className="rounded-xl bg-[#a80606] px-4 py-2 text-xs font-bold text-white">
                                             Mulai Latihan
                                         </Link>
                                     </div>
@@ -126,11 +121,11 @@ export default function Tryouts({ myTryouts, packages, articles }: Props) {
                 </section>
 
                 {/* CTA Banner */}
-                <section className="mt-8 overflow-hidden rounded-3xl bg-gradient-to-r from-[#a80606] to-[#d31325] p-8 text-white shadow-[0_20px_50px_rgba(168,6,6,0.18)]">
+                {/* <section className="mt-8 overflow-hidden rounded-3xl bg-gradient-to-r from-[#a80606] to-[#d31325] p-8 text-white shadow-[0_20px_50px_rgba(168,6,6,0.18)]">
                     <h2 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Butuh Konsultasi Strategi Belajar?</h2>
                     <p className="mt-3 max-w-xl text-sm leading-6 text-white/80">Bingung mulai dari mana? Konsultasikan targetmu dan susun rencana belajar yang realistis.</p>
                     <button className="mt-5 rounded-xl bg-[#ffd12e] px-5 py-3 text-sm font-bold text-[#311300]">Jadwalkan</button>
-                </section>
+                </section> */}
 
                 {/* Artikel */}
                 <section className="mt-8 grid gap-5 md:grid-cols-2">

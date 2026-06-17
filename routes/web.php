@@ -66,6 +66,9 @@ Route::middleware('auth:member')->group(function (): void {
     Route::get('/dashboard', [AcademyPortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/tryouts', [AcademyPortalController::class, 'tryouts'])->name('tryouts.index');
     Route::get('/leaderboard', [AcademyPortalController::class, 'leaderboard'])->name('leaderboard');
+    Route::get('/payment', function () {
+        return Inertia::render('portal/payment');
+    })->name('payment');
     Route::get('/tryouts/{package}/play', [AcademyPortalController::class, 'play'])->name('tryouts.play');
 });
 
