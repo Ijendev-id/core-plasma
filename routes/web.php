@@ -75,6 +75,7 @@ Route::middleware('auth:member')->group(function (): void {
     Route::get('/tryouts/{package}/play', [AcademyPortalController::class, 'play'])->name('tryouts.play');
     Route::post('/tryouts/{package}/submit', [AcademyPortalController::class, 'submit'])->name('tryouts.submit');
     Route::get('/tryouts/{package}/result/{attempt}', [AcademyPortalController::class, 'result'])->name('tryouts.result');
+    Route::post('/tryouts/{package}/result/{attempt}/certificate', [AcademyPortalController::class, 'printCertificate'])->name('tryouts.certificate');
     Route::get('/profile', [MemberProfileController::class, 'edit'])->name('member.profile.edit');
     Route::post('/profile', [MemberProfileController::class, 'update'])->name('member.profile.update');
 });

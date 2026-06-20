@@ -8,6 +8,8 @@ interface PackageInfo {
 }
 
 interface ResultData {
+    attempt_id: number;
+    certificate_printed_at: string | null;
     score: number;
     twk: number;
     tiu: number;
@@ -73,6 +75,21 @@ export default function Result({ package: pkg, result }: Props) {
                     </div>
 
                     <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                        {passed && !result.certificate_printed_at && (
+                            <Link
+                                href={route('tryouts.certificate', { package: pkg.slug, attempt: result.attempt_id })}
+                                method="post"
+                                as="button"
+                                className="rounded-xl bg-[#004b19] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(0,75,25,0.18)]"
+                            >
+                                Cetak & Selesaikan Sertifikat
+                            </Link>
+                        )}
+                        {passed && result.certificate_printed_at && (
+                            <span className="rounded-xl bg-[#e5e7eb] px-6 py-3 text-sm font-bold text-[#004b19]">
+                                Sertifikat Sudah Dicetak
+                            </span>
+                        )}
                         <Link href={route('leaderboard', { package: pkg.slug })} className="rounded-xl bg-[#00407f] px-6 py-3 text-sm font-bold text-white">
                             Lihat Leaderboard
                         </Link>

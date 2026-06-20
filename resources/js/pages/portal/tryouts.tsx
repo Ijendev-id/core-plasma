@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import PortalLayout from '../../layouts/PortalLayout';
 
 interface MyTryout {
+    attempt_id: number | null;
     package_name: string;
     package_slug: string;
     category: string;
@@ -13,6 +14,7 @@ interface MyTryout {
     status: string;
     date: string;
     duration: string;
+    certificate_printed_at: string | null;
 }
 
 interface Package {
@@ -102,9 +104,26 @@ export default function Tryouts({ myTryouts, myCategories, packages }: Props) {
                                                 ))}
                                             </div>
                                         </div>
-                                        <Link href={route('tryouts.play', { package: tryout.package_slug })} className="shrink-0 rounded-xl bg-[#a80606] px-4 py-2 text-xs font-bold text-white">
-                                            Ulangi
-                                        </Link>
+                                        {tryout.certificate_printed_at ? (
+                                            <span
+                                                title="Sertifikat sudah dicetak, ulangi dinonaktifkan."
+                                                className="shrink-0 cursor-not-allowed rounded-xl bg-[#e5e7eb] px-4 py-2 text-xs font-bold text-[#9ca3af]"
+                                            >
+                                                Ulangi (Terkunci)
+                                            </span>
+                                        ) : (
+                                            <Link href={route('tryouts.play', { package: tryout.package_slug })} className="shrink-0 rounded-xl bg-[#a80606] px-4 py-2 text-xs font-bold text-white">
+                                                Mulai Ulang
+                                            </Link>
+                                        )}
+                                        {tryout.status === 'Certified' && tryout.attempt_id && (
+                                            <Link
+                                                href={route('tryouts.result', { package: tryout.package_slug, attempt: tryout.attempt_id })}
+                                                className="shrink-0 rounded-xl bg-[#004b19] px-4 py-2 text-xs font-bold text-white"
+                                            >
+                                                Cetak Sertifikat
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             ))}

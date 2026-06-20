@@ -43,9 +43,20 @@ class AcademyPortalService
                 ->with('learningPackage')
                 ->where('member_id', $member->id)
                 ->whereNotNull('finished_at')
-                ->latest('finished_at')
+                // Hanya attempt dengan skor tertinggi per learning_package_id agar
+                // daftar My Try Out tetap satu entri per paket walau user mengulang.
+                ->whereIn('id', function ($sub) use ($member): void {
+                    $sub->selectRaw('MAX(id)')
+                        ->from('tryout_attempts')
+                        ->where('member_id', $member->id)
+                        ->whereNotNull('finished_at')
+                        ->groupBy('learning_package_id');
+                })
+                ->orderByDesc('score')
+                ->orderByDesc('finished_at')
                 ->get()
                 ->map(fn (TryoutAttempt $attempt): array => [
+                    'attempt_id' => $attempt->id,
                     'package_name' => $attempt->learningPackage?->name ?? 'Tryout',
                     'package_slug' => $attempt->learningPackage?->slug ?? '#',
                     'category' => $attempt->learningPackage?->category ?? '-',
@@ -56,6 +67,7 @@ class AcademyPortalService
                     'status' => $this->attemptStatus($attempt->status),
                     'date' => $attempt->finished_at?->format('d M Y'),
                     'duration' => $this->formatDuration($attempt->duration_seconds),
+                    'certificate_printed_at' => $attempt->certificate_printed_at?->toIso8601String(),
                 ])
                 ->all()
             : [];
@@ -304,6 +316,8 @@ class AcademyPortalService
                 'category' => $package->category,
             ],
             'result' => [
+                'attempt_id' => $attempt->id,
+                'certificate_printed_at' => $attempt->certificate_printed_at?->toIso8601String(),
                 'score' => $attempt->score,
                 'twk' => $attempt->twk_score,
                 'tiu' => $attempt->tiu_score,
@@ -575,14 +589,42 @@ class AcademyPortalService
 
     private function topAttempts(int $limit, ?int $packageId = null)
     {
+        // Hanya skor tertinggi per member untuk paket yang sama, agar leaderboard
+        // menampilkan 1 baris per orang dengan skor terbaiknya.
         return TryoutAttempt::query()
             ->with(['member', 'learningPackage'])
             ->when($packageId, fn ($q) => $q->where('learning_package_id', $packageId))
             ->whereNotNull('finished_at')
+            ->whereIn('id', function ($sub) use ($packageId): void {
+                $sub->selectRaw('MAX(id)')
+                    ->from('tryout_attempts')
+                    ->whereNotNull('finished_at')
+                    ->when($packageId, fn ($q) => $q->where('learning_package_id', $packageId))
+                    ->groupBy('member_id', 'learning_package_id');
+            })
             ->orderByDesc('score')
             ->orderBy('duration_seconds')
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * Tandai sertifikat attempt sudah dicetak. Sekali dicetak tombol Ulangi dinonaktifkan.
+     */
+    public function markCertificatePrinted(LearningPackage $package, TryoutAttempt $attempt): TryoutAttempt
+    {
+        $member = $this->currentMember();
+        abort_unless($member !== null, 403, 'Harus login sebagai member.');
+        abort_unless($attempt->member_id === $member->id, 403);
+        abort_unless($attempt->learning_package_id === $package->id, 404);
+        abort_unless($attempt->status === 'certified', 422, 'Sertifikat hanya tersedia untuk tryout yang lulus.');
+
+        if ($attempt->certificate_printed_at === null) {
+            $attempt->certificate_printed_at = now();
+            $attempt->save();
+        }
+
+        return $attempt->fresh();
     }
 
     /**

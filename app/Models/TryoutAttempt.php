@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'status',
     'started_at',
     'finished_at',
+    'certificate_printed_at',
 ])]
 class TryoutAttempt extends Model
 {
@@ -55,6 +56,7 @@ class TryoutAttempt extends Model
             'duration_seconds' => 'integer',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
+            'certificate_printed_at' => 'datetime',
         ];
     }
 }
