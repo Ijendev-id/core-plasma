@@ -62,4 +62,11 @@ class AcademyPortalController extends Controller
 
         return Inertia::render('portal/result', $this->service->attemptResult($package, $attempt));
     }
+
+    public function printCertificate(LearningPackage $package, \App\Models\TryoutAttempt $attempt): RedirectResponse
+    {
+        $this->service->markCertificatePrinted($package, $attempt);
+
+        return redirect()->route('tryouts.result', [$package, $attempt]);
+    }
 }

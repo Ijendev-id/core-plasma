@@ -51,6 +51,9 @@ export default function Play({ package: pkg, questions }: Props) {
 
     const remaining = hasTimer ? pkg!.duration_minutes * 60 - elapsed : 0;
     const answeredCount = Object.keys(answers).length;
+    const totalQuestions = questions.length;
+    const allAnswered = totalQuestions > 0 && answeredCount >= totalQuestions;
+    const remainingToAnswer = Math.max(0, totalQuestions - answeredCount);
 
     const question = questions[current];
 
@@ -61,21 +64,22 @@ export default function Play({ package: pkg, questions }: Props) {
     const submit = useMemo(
         () => () => {
             if (submitting || !pkg) return;
+            if (!allAnswered) return;
             setSubmitting(true);
             router.post(route('tryouts.submit', pkg.slug), { answers, duration_seconds: elapsed }, {
                 onFinish: () => setSubmitting(false),
             });
         },
-        [submitting, pkg, answers, elapsed],
+        [submitting, pkg, answers, elapsed, allAnswered],
     );
 
-    // Auto-submit saat waktu habis.
+    // Auto-submit hanya berjalan bila waktu habis DAN semua soal sudah terjawab.
     useEffect(() => {
-        if (hasTimer && remaining <= 0) {
+        if (hasTimer && remaining <= 0 && allAnswered) {
             submit();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [remaining, hasTimer]);
+    }, [remaining, hasTimer, allAnswered]);
 
     if (!pkg || questions.length === 0) {
         return (
@@ -88,6 +92,14 @@ export default function Play({ package: pkg, questions }: Props) {
         );
     }
 
+    const submitBtnClass = allAnswered
+        ? 'rounded-xl bg-[#004b19] px-6 py-3 text-xs font-bold text-white shadow-[0_8px_20px_rgba(0,75,25,0.18)] transition hover:bg-[#003515]'
+        : 'rounded-xl bg-[#e5e7eb] px-6 py-3 text-xs font-bold text-[#9ca3af] cursor-not-allowed';
+
+    const submitSidebarClass = allAnswered
+        ? 'mt-5 w-full rounded-xl bg-[#004b19] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(0,75,25,0.18)] transition hover:bg-[#003515]'
+        : 'mt-5 w-full rounded-xl bg-[#e5e7eb] px-4 py-3 text-sm font-bold text-[#9ca3af] cursor-not-allowed';
+
     return (
         <PortalLayout>
             <Head title={`Tryout - ${pkg.name}`} />
@@ -96,7 +108,7 @@ export default function Play({ package: pkg, questions }: Props) {
                 <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">{pkg.name} · {question.section}</p>
+                            <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">{pkg.name} Â· {question.section}</p>
                             <h1 className="mt-1 text-2xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                 Soal {question.number} dari {questions.length}
                             </h1>
@@ -126,7 +138,11 @@ export default function Play({ package: pkg, questions }: Props) {
                                         selected ? 'border-[#a80606] bg-[#fff1f1]' : 'border-[#f0eded] bg-[#f8f7f7] hover:border-[#d9a1a1]'
                                     }`}
                                 >
-                                    <span className={`inline-flex size-6 items-center justify-center rounded-md text-xs font-bold ${selected ? 'bg-[#a80606] text-white' : 'bg-white text-[#727783]'}`}>
+                                    <span
+                                        className={`flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                                            selected ? 'bg-[#a80606] text-white' : 'bg-white text-[#727783] border border-[#f0eded]'
+                                        }`}
+                                    >
                                         {answer.label}
                                     </span>
                                     <input
@@ -142,7 +158,7 @@ export default function Play({ package: pkg, questions }: Props) {
                         })}
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between">
+                    <div className="mt-6 flex items-center justify-between gap-3">
                         <button
                             type="button"
                             onClick={() => setCurrent((c) => Math.max(0, c - 1))}
@@ -160,14 +176,21 @@ export default function Play({ package: pkg, questions }: Props) {
                                 Selanjutnya &gt;
                             </button>
                         ) : (
-                            <button
-                                type="button"
-                                onClick={submit}
-                                disabled={submitting}
-                                className="rounded-xl bg-[#004b19] px-6 py-3 text-xs font-bold text-white disabled:opacity-60"
-                            >
-                                {submitting ? 'Mengirim...' : 'Selesai & Kirim'}
-                            </button>
+                            <div className="flex flex-col items-end gap-1">
+                                <button
+                                    type="button"
+                                    onClick={submit}
+                                    disabled={submitting || !allAnswered}
+                                    className={submitBtnClass}
+                                >
+                                    {submitting ? 'Mengirim...' : allAnswered ? 'Selesai & Kirim' : `Selesaikan ${remainingToAnswer} soal lagi`}
+                                </button>
+                                {!allAnswered && (
+                                    <span className="text-[11px] font-semibold text-[#a80606]">
+                                        Tombol terkunci sampai semua soal terjawab.
+                                    </span>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -206,10 +229,10 @@ export default function Play({ package: pkg, questions }: Props) {
                         <button
                             type="button"
                             onClick={submit}
-                            disabled={submitting}
-                            className="mt-5 w-full rounded-xl bg-[#004b19] px-4 py-3 text-sm font-bold text-white disabled:opacity-60"
+                            disabled={submitting || !allAnswered}
+                            className={submitSidebarClass}
                         >
-                            {submitting ? 'Mengirim...' : 'Selesai & Kirim'}
+                            {submitting ? 'Mengirim...' : allAnswered ? 'Selesai & Kirim' : `Terkunci · ${remainingToAnswer} soal belum dijawab`}
                         </button>
                     </section>
                 </aside>
