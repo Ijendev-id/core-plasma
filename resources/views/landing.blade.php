@@ -44,11 +44,11 @@
             <a href="#paket" class="btn-primary">Lihat Paket Belajar</a>
 
             <div class="social-proof">
-                <div class="avatars">
+                {{-- <div class="avatars">
                     <img src="https://i.pravatar.cc/100?img=1" alt="Siswa 1">
                     <img src="https://i.pravatar.cc/100?img=2" alt="Siswa 2">
                     <img src="https://i.pravatar.cc/100?img=3" alt="Siswa 3">
-                </div>
+                </div> --}}
                 <div class="proof-text">
                     <strong>500+</strong> Siswa Core plasma lolos PTN, Kedinasan, CPNS dan BUMN
                 </div>

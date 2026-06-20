@@ -94,10 +94,24 @@ class AcademyPortalService
      */
     public function leaderboard(?string $packageSlug = null): array
     {
-        $packages = LearningPackage::query()
-            ->where('status', 'published')
-            ->orderBy('id')
-            ->get(['id', 'name', 'slug', 'leaderboard_price']);
+        $member = $this->currentMember();
+
+        $enrolledPackageIds = $member
+            ? PackageEnrollment::query()
+                ->where('member_id', $member->id)
+                ->where('status', 'active')
+                ->pluck('learning_package_id')
+                ->unique()
+                ->all()
+            : [];
+
+        $packages = empty($enrolledPackageIds)
+            ? collect()
+            : LearningPackage::query()
+                ->whereIn('id', $enrolledPackageIds)
+                ->where('status', 'published')
+                ->orderBy('id')
+                ->get(['id', 'name', 'slug', 'leaderboard_price']);
 
         $selected = $packageSlug
             ? $packages->firstWhere('slug', $packageSlug) ?? $packages->first()

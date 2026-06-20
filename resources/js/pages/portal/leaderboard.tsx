@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+﻿import { Head, Link } from '@inertiajs/react';
 import PortalLayout from '../../layouts/PortalLayout';
 
 interface PodiumPerson {
@@ -37,46 +37,66 @@ function rankLabel(rank: number): string {
     return `${rank}TH`;
 }
 
-export default function Leaderboard({ podium, rows }: Props) {
-    const isLocked = true;
+// Menambahkan komponen LockIcon secara langsung agar tidak error
+const LockIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#d40f22]">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    </svg>
+);
+
+export default function Leaderboard({ packages, selectedPackage, isLocked, podium, rows }: Props) {
 
     return (
         <PortalLayout>
             <Head title="Leaderboard" />
-            <section className="relative max-w-5xl">
-                {isLocked ? (
-                    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/45 px-4">
-                        <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
-                            <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">Leaderboard Terkunci</p>
-                            <h2 className="mt-3 text-2xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                Buka leaderboard sekarang
-                            </h2>
-                            <p className="mt-3 text-sm leading-6 text-[#727783]">
-                                Akses hasil lengkap dan ranking peserta setelah membuka tampilan leaderboard.
-                            </p>
-                            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                                <Link
-                                    href={route('payment')}
-                                    className="inline-flex flex-1 items-center justify-center rounded-xl bg-[#d40f22] px-5 py-3 text-sm font-bold text-white"
-                                >
-                                    Buka leaderboard sekarang
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                ) : null}
+            <section className="relative max-w-5xl mx-auto">
 
-                <div className={`rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition duration-300 ${isLocked ? 'select-none blur-[6px]' : ''}`}>
+                {/* Kontainer utama dengan posisi relative untuk menampung absolute overlay */}
+                <div className="relative rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition duration-300">
+
                     <div className="text-center">
                         <p className="text-xs font-bold uppercase tracking-[1px] text-[#d40f22]">Leaderboard</p>
                         <h1 className="mt-2 text-3xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Puncak Pretul</h1>
-                        {selectedPackage && (
+                        {selectedPackage ? (
                             <p className="mt-2 text-sm font-medium text-[#727783]">Result of {selectedPackage.name}</p>
-                        )}
+                        ) : null}
+
+                        {packages.length > 0 ? (
+                            <div className="mt-4 flex flex-wrap justify-center gap-2">
+                                {packages.map((pkg) => (
+                                    <Link
+                                        key={pkg.slug}
+                                        href={route('leaderboard', { package: pkg.slug })}
+                                        className={`rounded-full px-3 py-1 text-xs font-bold transition ${
+                                            selectedPackage?.slug === pkg.slug
+                                                ? 'bg-[#d40f22] text-white'
+                                                : 'bg-[#f8f7f7] text-[#727783] hover:bg-[#f0eded]'
+                                        }`}
+                                    >
+                                        {pkg.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : null}
                     </div>
 
-                    {/* Blurred content when locked */}
-                    <div className={isLocked ? 'pointer-events-none select-none blur-sm' : ''}>
+
+                    {packages.length === 0 && (
+                        <div className="mt-8 rounded-2xl bg-[#f8f7f7] p-8 text-center">
+                            <p className="text-sm font-semibold text-[#727783]">
+                                Kamu belum mengikuti tryout apapun. Pilih paket di halaman Try Out untuk mulai.
+                            </p>
+                            <Link
+                                href={route('tryouts.index')}
+                                className="mt-4 inline-flex rounded-xl bg-[#d40f22] px-5 py-2 text-xs font-bold text-white transition hover:bg-[#b90d1c]"
+                            >
+                                Lihat Paket Try Out
+                            </Link>
+                        </div>
+                    )}
+                    {/* Area konten yang akan di-blur jika isLocked true */}
+                    <div className={isLocked ? 'pointer-events-none select-none blur-[8px] opacity-60 transition duration-300' : ''}>
                         {/* Podium */}
                         <div className="mt-8 grid items-end gap-4 md:grid-cols-3">
                             {podium.length === 0 ? (
@@ -135,10 +155,10 @@ export default function Leaderboard({ podium, rows }: Props) {
                         )}
                     </div>
 
-                    {/* Lock overlay */}
+                    {/* Pop-up Lock Overlay (muncul tepat di tengah card) */}
                     {isLocked && (
-                        <div className="absolute inset-0 flex items-center justify-center rounded-3xl">
-                            <div className="mx-4 w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+                        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-white/10">
+                            <div className="mx-4 w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
                                 <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#fff0f0]">
                                     <LockIcon />
                                 </div>
@@ -148,9 +168,13 @@ export default function Leaderboard({ podium, rows }: Props) {
                                     <span className="font-bold text-[#d40f22]">Core Plasma Pro</span>{' '}
                                     mulai dari Rp {(selectedPackage?.price ?? 0).toLocaleString('id-ID')} per try out.
                                 </p>
-                                <button className="mt-6 w-full rounded-xl bg-[#d40f22] px-5 py-3 text-sm font-bold text-white">
+                                {/* Menggunakan komponen Link dari Inertia agar SPA routing tetap terjaga */}
+                                <Link
+                                    href={route('payment')}
+                                    className="mt-6 flex w-full justify-center rounded-xl bg-[#d40f22] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#b90d1c]"
+                                >
                                     Upgrade ke Pro
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     )}
@@ -159,3 +183,5 @@ export default function Leaderboard({ podium, rows }: Props) {
         </PortalLayout>
     );
 }
+
+

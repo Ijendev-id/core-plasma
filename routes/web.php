@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademyPortalController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\MemberAuthController;
@@ -23,14 +24,13 @@ Route::get('/', function () {
 })->name('home');
 
 // --- RUTE AUTHENTICATION (LOGIN) ---
-Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
-Route::post('/login', [AdminAuthController::class, 'store'])->name('login.store');
-Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
-
+// /login di-redirect ke halaman login member (login publik hanya untuk member).
+Route::get('/login', function () {
+    return redirect()->route('member.login');
+})->name('login');
 // --- RUTE MENU LAINNYA ---
-Route::get('/artikel', function () {
-    return Inertia::render('landing');
-})->name('artikel');
+Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel');
+Route::get('/artikel/{slug}', [ArticleController::class, 'show'])->name('artikel.show');
 
 Route::get('/paket-belajar', function () {
     return Inertia::render('landing');
@@ -108,3 +108,6 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 });
 
 require __DIR__.'/settings.php';
+
+
+

@@ -15,13 +15,13 @@
                 <a href="#paket" class="btn-primary">Lihat Try Out Gratis</a>
 
                 <div class="social-proof">
-                    <div class="avatars">
+                    {{-- <div class="avatars">
                         <img src="https://i.pravatar.cc/100?img=1" alt="Siswa 1">
                         <img src="https://i.pravatar.cc/100?img=2" alt="Siswa 2">
                         <img src="https://i.pravatar.cc/100?img=3" alt="Siswa 3">
-                    </div>
+                    </div> --}}
                     <div class="proof-text">
-                        <strong>500+</strong> Siswa Core plasma lolos PTN, Kedinasan, CPNS dan BUMN
+                        <strong>500+</strong> Peserta Try Out Core plasma lolos PTN, Kedinasan, CPNS dan BUMN
                     </div>
                 </div>
             </div>
@@ -34,16 +34,13 @@
 
     <section class="section-padding bg-light-alt" id="artikel">
         <div class="container">
-            <div class="section-header flex-header">
-                <div>
-                    <p class="subtitle">WAWASAN TERBARU</p>
-                    <h2>Artikel <span class="text-red">Terupdate</span></h2>
-                </div>
-                <a href="{{ route('artikel') }}" class="view-all">Lihat Semua Blog &rarr;</a>
+            <div class="section-header text-center">
+                <p class="subtitle">WAWASAN TERBARU</p>
+                <h2>Artikel <span class="text-red">Terupdate</span></h2>
             </div>
 
             <div class="article-grid">
-                <div class="article-card">
+                <a href="{{ route('artikel.show', ['slug' => 'strategi-jitu-lolos-cpns-pppk-2026']) }}" class="article-card">
                     <div class="card-img-wrap">
                         <span class="badge-tag">CPNS & PPPK</span>
                         <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Artikel 1">
@@ -52,11 +49,11 @@
                         <span class="date">Desember 2025</span>
                         <h3>Strategi Jitu Lolos CPNS & PPPK dengan Skor Maksimal</h3>
                         <p>Pahami tipe soal ASN, kuasai time management, dan strategi mengerjakan soal CAT untuk meraih nilai tertinggi di seleksi CPNS & PPPK 2026...</p>
-                        <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
+                        <span class="read-more">Baca Selengkapnya &rsaquo;</span>
                     </div>
-                </div>
+                </a>
 
-                <div class="article-card">
+                <a href="{{ route('artikel.show', ['slug' => 'tips-ampuh-lolos-bumn-kedinasan']) }}" class="article-card">
                     <div class="card-img-wrap">
                         <span class="badge-tag tag-yellow">BUMN & KEDINASAN</span>
                         <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Artikel 2">
@@ -65,11 +62,11 @@
                         <span class="date">November 2025</span>
                         <h3>Tips Ampuh Lolos Seleksi BUMN dan Kedinasan dengan Percaya Diri</h3>
                         <p>Analisis soal BUMN, pahami kompetensi yang diuji, dan strategi interview untuk diterima bekerja di BUMN dan Akademi Kedinasan impianmu...</p>
-                        <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
+                        <span class="read-more">Baca Selengkapnya &rsaquo;</span>
                     </div>
-                </div>
+                </a>
 
-                <div class="article-card">
+                <a href="{{ route('artikel.show', ['slug' => 'raih-skor-utbk-tertinggi-2026']) }}" class="article-card">
                     <div class="card-img-wrap">
                         <span class="badge-tag">UTBK & PTN</span>
                         <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Artikel 3">
@@ -78,13 +75,17 @@
                         <span class="date">Oktober 2025</span>
                         <h3>Raih Skor UTBK Tertinggi dengan Metode Belajar Revolusioner</h3>
                         <p>Kuasai seluruh subtes UTBK (TPS, Literasi, Penalaran), manfaatkan try out berkala, dan maksimalkan peluang lolos PTN di jalur SNBT...</p>
-                        <a href="#" class="read-more">Baca Selengkapnya &rsaquo;</a>
+                        <span class="read-more">Baca Selengkapnya &rsaquo;</span>
                     </div>
-                </div>
+                </a>
+            </div>
+
+            <div class="text-center mt-12">
+                <br>
+                <a href="{{ route('artikel') }}" class="view-all">Lihat Semua Blog &rarr;</a>
             </div>
         </div>
     </section>
-
     <section class="section-padding bg-light" id="paket">
         <div class="container text-center">
             <div class="section-header align-center">
@@ -93,31 +94,27 @@
                 <p class="desc">Pilih try out CPNS | PPPK | Kedinasan | UTBK Gratis hanya di core plasma</p>
             </div>
 
-            <div class="pricing-grid">
+            <div class="pricing-grid" id="pricingGrid">
                 @forelse($packages as $index => $package)
-                    <div class="pricing-card @if($index === 1) featured @endif">
+                    <div class="pricing-card js-pricing-card @if($index === 1) featured @endif" data-package-id="{{ $package->id }}">
                         @if($index === 1)
                             <div class="ribbon">TERBARU</div>
                         @endif
-                        <h4 @if($index === 1) class="text-red" @endif>{{ $package->name }}</h4>
+                        <h4 @if($index === 1) class="text-red js-card-title" @endif class="js-card-title">{{ $package->name }}</h4>
                         <div class="price">
                             <h2>Rp {{ number_format($package->price / 1000, 0, ',', '.') }}k</h2><span>/bulan</span>
                         </div>
                         <p class="pricing-desc">{{ $package->category }}</p>
                         <ul class="features">
                             @if($package->question_count > 0)
-                                <li><span class="icon-check{{ $index === 1 ? '-red' : '' }}">&#10003;</span> {{ $package->question_count }} Soal Try Out</li>
+                                <li><span class="icon-check{{ $index === 1 ? '-red' : '' }} js-icon-check">&#10003;</span> {{ $package->question_count }} Soal Try Out</li>
                             @endif
                             @if($package->participants_count > 0)
-                                <li><span class="icon-check{{ $index === 1 ? '-red' : '' }}">&#10003;</span> {{ $package->participants_count }}+ Peserta Aktif</li>
+                                <li><span class="icon-check{{ $index === 1 ? '-red' : '' }} js-icon-check">&#10003;</span> {{ $package->participants_count }}+ Peserta Aktif</li>
                             @endif
                         </ul>
-                        <a href="{{ $index === 1 ? route('member.register') : '#' }}" class="btn-pricing {{ $index === 1 ? 'btn-primary-block' : 'btn-outline' }}">
-                            @if($index === 1)
-                                Daftar Sekarang
-                            @else
-                                Pilih Paket
-                            @endif
+                        <a href="{{ $index === 1 ? route('member.register') : '#' }}" class="btn-pricing {{ $index === 1 ? 'btn-primary-block' : 'btn-outline' }} js-pricing-btn">
+                            <span class="js-btn-label">{{ $index === 1 ? 'Daftar Sekarang' : 'Pilih Paket' }}</span>
                         </a>
                     </div>
                 @empty
@@ -126,6 +123,73 @@
                     </div>
                 @endforelse
             </div>
+
+            @once
+                <script>
+                    (function () {
+                        var grid = document.getElementById('pricingGrid');
+                        if (!grid) return;
+
+                        var registerUrl = @json(route('member.register'));
+
+                        grid.addEventListener('click', function (event) {
+                            var card = event.target.closest('.js-pricing-card');
+                            if (!card || !grid.contains(card)) return;
+
+                            // Kalau klik tombol, tunda navigasi supaya perpindahan featured terlihat dulu
+                            var clickedBtn = event.target.closest('.js-pricing-btn');
+                            if (clickedBtn) event.preventDefault();
+
+                            var cards = grid.querySelectorAll('.js-pricing-card');
+                            cards.forEach(function (c) {
+                                if (c === card) return;
+                                c.classList.remove('featured');
+                                var ribbon = c.querySelector('.ribbon');
+                                if (ribbon) ribbon.remove();
+                                var title = c.querySelector('.js-card-title');
+                                if (title) title.classList.remove('text-red');
+                                c.querySelectorAll('.js-icon-check').forEach(function (i) {
+                                    i.classList.remove('icon-check-red');
+                                });
+                                var btn = c.querySelector('.js-pricing-btn');
+                                if (btn) {
+                                    btn.classList.remove('btn-primary-block');
+                                    btn.classList.add('btn-outline');
+                                    btn.setAttribute('href', '#');
+                                    var label = btn.querySelector('.js-btn-label');
+                                    if (label) label.textContent = 'Pilih Paket';
+                                }
+                            });
+
+                            card.classList.add('featured');
+                            if (!card.querySelector('.ribbon')) {
+                                var ribbon = document.createElement('div');
+                                ribbon.className = 'ribbon';
+                                ribbon.textContent = 'TERBARU';
+                                card.insertBefore(ribbon, card.firstChild);
+                            }
+                            var title = card.querySelector('.js-card-title');
+                            if (title) title.classList.add('text-red');
+                            card.querySelectorAll('.js-icon-check').forEach(function (i) {
+                                i.classList.add('icon-check-red');
+                            });
+                            var btn = card.querySelector('.js-pricing-btn');
+                            if (btn) {
+                                btn.classList.remove('btn-outline');
+                                btn.classList.add('btn-primary-block');
+                                btn.setAttribute('href', registerUrl);
+                                var label = btn.querySelector('.js-btn-label');
+                                if (label) label.textContent = 'Daftar Sekarang';
+                            }
+
+                            // Kalau yang diklik adalah tombol, baru navigasi setelah jeda singkat
+                            if (clickedBtn) {
+                                setTimeout(function () { window.location.href = registerUrl; }, 250);
+                            }
+                        });
+                    })();
+                </script>
+            @endonce
         </div>
     </section>
 
@@ -290,3 +354,4 @@
     </section>
 
 @endsection
+
