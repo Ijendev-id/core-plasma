@@ -78,6 +78,15 @@ class AcademyPortalService
                 ->pluck('progress_percent', 'learning_package_id')
             : collect();
 
+        $enrolledPackageIds = $member
+            ? PackageEnrollment::query()
+                ->where('member_id', $member->id)
+                ->where('status', 'active')
+                ->pluck('learning_package_id')
+                ->map(fn ($id): int => (int) $id)
+                ->all()
+            : [];
+
         return [
             'myTryouts' => $myTryouts,
             'myCategories' => collect($myTryouts)->pluck('category')->unique()->values()->all(),
@@ -93,12 +102,43 @@ class AcademyPortalService
                     'question_count' => $package->questions_count ?: $package->question_count,
                     'progress' => (int) ($progressByPackage[$package->id] ?? 0),
                     'price' => 'Rp '.number_format($package->price, 0, ',', '.'),
+                    'leaderboard_price' => (int) $package->leaderboard_price,
                     'duration' => $package->duration_minutes > 0
                         ? $package->duration_minutes.' menit'
                         : $this->durationFor($package->category),
                 ])
                 ->all(),
+            'topByPackage' => $this->topAttemptsByPackageMap($enrolledPackageIds),
         ];
+    }
+
+    /**
+     * Map slug => top 10 attempts lintas member untuk masing-masing paket.
+     *
+     * @param  array<int, int>  $enrolledPackageIds
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    private function topAttemptsByPackageMap(array $enrolledPackageIds): array
+    {
+        if (empty($enrolledPackageIds)) {
+            return [];
+        }
+
+        return LearningPackage::query()
+            ->whereIn('id', $enrolledPackageIds)
+            ->where('status', 'published')
+            ->get(['id', 'slug'])
+            ->mapWithKeys(function (LearningPackage $package): array {
+                $rows = $this->topAttempts(10, $package->id)
+                    ->map(fn (TryoutAttempt $a, int $i): array => [
+                        'rank' => $i + 1,
+                        'name' => $a->member?->name ?? 'Member',
+                        'score' => $a->score,
+                    ])
+                    ->all();
+                return [$package->slug => $rows];
+            })
+            ->all();
     }
 
     /**
@@ -130,8 +170,10 @@ class AcademyPortalService
             : $packages->first();
 
         $attempts = $selected ? $this->topAttempts(12, $selected->id) : collect();
-        // Leaderboard terkunci hanya jika ada harga buka (> 0). leaderboard_price = 0 → langsung terlihat.
-        $isLocked = $selected && (int) $selected->leaderboard_price > 0;
+        // Default leaderboard TERKUNCI untuk semua paket yang dipilih. Nilai
+        // leaderboard_price dipakai sebagai unlock fee di popup (0 = paket free,
+        // admin bisa isi nominal lain).
+        $isLocked = $selected !== null;
 
         return [
             'packages' => $packages->map(fn (LearningPackage $p): array => [
@@ -166,12 +208,48 @@ class AcademyPortalService
                     'total' => $attempt->score,
                 ])
                 ->all(),
+            // Pagination: tampilkan entry untuk paket yang sedang dipilih (1 paket).
+            // Lock dihitung per paket dari kolom leaderboard_price:
+            //   > 0 → paket terkunci + popup unlock ke /payment (QRIS),
+            //   = 0 → paket gratis, langsung terbuka.
+            'entries' => $selected
+                ? [[
+                    'package' => [
+                        'name' => $selected->name,
+                        'slug' => $selected->slug,
+                        'price' => (int) $selected->leaderboard_price,
+                    ],
+                    // Default TERKUNCI untuk semua paket. Harga di popup diambil dari
+                    // leaderboard_price paket (0 = fallback Rp 29.000 di frontend).
+                    // Paket dapat dibuka (isLocked=false) hanya bila admin set
+                    // leaderboard_price = 0 eksplisit via form paket.
+                    'isLocked' => true,
+                    'podium' => $attempts
+                        ->take(3)
+                        ->values()
+                        ->map(fn (TryoutAttempt $attempt, int $index): array => [
+                            'rank' => $index + 1,
+                            'name' => $attempt->member?->name ?? 'Member',
+                            'score' => $attempt->score,
+                        ])
+                        ->all(),
+                    'rows' => $attempts
+                        ->skip(3)
+                        ->values()
+                        ->map(fn (TryoutAttempt $attempt, int $index): array => [
+                            'rank' => $index + 4,
+                            'name' => $attempt->member?->name ?? 'Member',
+                            'twk' => $attempt->twk_score,
+                            'tiu' => $attempt->tiu_score,
+                            'tkp' => $attempt->tkp_score,
+                            'total' => $attempt->score,
+                        ])
+                        ->all(),
+                ]]
+                : [],
         ];
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     /**
      * Pastikan member terdaftar pada tryout, dengan menegakkan limit kuota.
      * Mengembalikan true jika boleh lanjut, false jika kuota penuh.
